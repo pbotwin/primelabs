@@ -58,6 +58,13 @@ export const copy = {
     snacks: "სნექები",
     searchLabel: "ძიება",
     menu: "მენიუ",
+    footerTagline: "სპორტული კვება შენი მიზნებისთვის.",
+    footerDelivery: "მიწოდება",
+    footerSupport: "დახმარება",
+    backToTop: "გვერდის დასაწყისში დაბრუნება",
+    newsletterTitle: "PrimeLabs სიახლეები",
+    newsletterText: "მიიღე ახალი პროდუქტები და სპეციალური შეთავაზებები ელფოსტაზე.",
+    newsletterButton: "გამოწერა",
   },
   en: {
     announcement: "Free delivery on orders over ₾150",
@@ -117,6 +124,13 @@ export const copy = {
     snacks: "Snacks",
     searchLabel: "Search",
     menu: "Menu",
+    footerTagline: "Sports nutrition for your goals.",
+    footerDelivery: "Delivery",
+    footerSupport: "Support",
+    backToTop: "Back to top",
+    newsletterTitle: "PrimeLabs newsletter",
+    newsletterText: "Get new products and special offers in your inbox.",
+    newsletterButton: "Subscribe",
   },
 } satisfies Record<Language, Record<string, string>>;
 export type CopyKey = keyof typeof copy.en;

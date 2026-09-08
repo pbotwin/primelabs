@@ -110,7 +110,7 @@ export function App() {
     .filter((product) => cart[product.id])
     .map((product) => ({ product, quantity: cart[product.id] }));
   return (
-    <div id="top">
+    <div id="top" lang={language}>
       <a className="skip" href="#product-grid-anchor">
         Skip to products
       </a>
@@ -257,14 +257,14 @@ export function App() {
               <p>{t("originalText")}</p>
             </div>
           </article>
-          <article>
+          <article id="delivery">
             <Truck />
             <div>
               <h3>{t("delivery")}</h3>
               <p>{t("deliveryText")}</p>
             </div>
           </article>
-          <article>
+          <article id="support">
             <Headphones />
             <div>
               <h3>{t("help")}</h3>
@@ -273,7 +273,11 @@ export function App() {
           </article>
         </section>
       </main>
-      <Footer t={t} />
+      <Footer
+        t={t}
+        onContact={() => setContactOpen(true)}
+        onNewsletter={() => setNewsletterOpen(true)}
+      />
       <ProductDialog
         language={language}
         product={selectedProduct}
