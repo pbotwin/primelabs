@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
+import {
+  ChevronRight,
+  Grid2X2,
+  Heart,
+  Mail,
+  Menu,
+  MessageCircle,
+  Search,
+  ShoppingBag,
+  X,
+} from "lucide-react";
 import type { CopyKey } from "../data/translations";
 import type { Language } from "../types";
 import { IconButton } from "./IconButton";
@@ -73,7 +83,7 @@ export function Header({
     setMenuOpen(false);
     onHome();
   };
-  const close = () => setMenuOpen(false);
+  const closeMenu = () => setMenuOpen(false);
   return (
     <>
       <div className="announcement">
@@ -81,6 +91,17 @@ export function Header({
       </div>
       <header className={stuck ? "header stuck" : "header"}>
         <div className="shell header-row">
+          <IconButton
+            label={t("menu")}
+            className="menu-button menu-button-left"
+            onClick={() => {
+              setMenuOpen((open) => !open);
+              setSearchOpen(false);
+            }}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <X /> : <Menu />}
+          </IconButton>
           <a
             href="#top"
             className="logo"
@@ -103,7 +124,10 @@ export function Header({
             <span ref={searchToggleRef} className="search-toggle-wrap">
               <IconButton
                 label={t("searchLabel")}
-                onClick={() => setSearchOpen((v) => !v)}
+                onClick={() => {
+                  setSearchOpen((v) => !v);
+                  setMenuOpen(false);
+                }}
                 aria-expanded={searchOpen}
               >
                 {searchOpen ? <X /> : <Search />}
@@ -123,14 +147,6 @@ export function Header({
               <span>{t("cart")}</span>
               {cartCount > 0 && <b>{cartCount}</b>}
             </button>
-            <IconButton
-              label={t("menu")}
-              className="menu-button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <X /> : <Menu />}
-            </IconButton>
           </div>
         </div>
         {searchOpen && (
@@ -152,25 +168,39 @@ export function Header({
           </div>
         )}
         {menuOpen && (
-          <nav className="shell mobile-nav">
-            <a onClick={close} href="#categories">
-              {t("products")}
+          <nav className="shell mobile-menu-panel" aria-label={t("menu")}>
+            <a href="#categories" onClick={closeMenu}>
+              <span>
+                <Grid2X2 />
+              </span>
+              <b>{t("products")}</b>
+              <ChevronRight />
             </a>
             <button
+              type="button"
               onClick={() => {
-                close();
+                closeMenu();
                 onNewsletter();
               }}
             >
-              {language === "ka" ? "სიახლეები" : "Newsletter"}
+              <span>
+                <Mail />
+              </span>
+              <b>{language === "ka" ? "სიახლეები" : "Newsletter"}</b>
+              <ChevronRight />
             </button>
             <button
+              type="button"
               onClick={() => {
-                close();
+                closeMenu();
                 onContact();
               }}
             >
-              {t("contact")}
+              <span>
+                <MessageCircle />
+              </span>
+              <b>{t("contact")}</b>
+              <ChevronRight />
             </button>
           </nav>
         )}
