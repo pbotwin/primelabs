@@ -18,12 +18,19 @@ export function Footer({ t, onContact, onNewsletter }: FooterProps) {
         <nav aria-label={t("company")}>
           <h3>{t("company")}</h3>
           <a href="#about">{t("about")}</a>
-          <button type="button" onClick={onContact}>{t("contact")}</button>
+          <button type="button" onClick={onContact}>
+            {t("contact")}
+          </button>
           <a href="#delivery">{t("footerDelivery")}</a>
           <a href="#support">{t("footerSupport")}</a>
         </nav>
-        <section className="footer-newsletter" aria-labelledby="footer-newsletter-title">
-          <span className="footer-newsletter-icon"><Mail /></span>
+        <section
+          className="footer-newsletter"
+          aria-labelledby="footer-newsletter-title"
+        >
+          <span className="footer-newsletter-icon">
+            <Mail />
+          </span>
           <div>
             <h3 id="footer-newsletter-title">{t("newsletterTitle")}</h3>
             <p>{t("newsletterText")}</p>

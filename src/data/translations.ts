@@ -63,7 +63,8 @@ export const copy = {
     footerSupport: "დახმარება",
     backToTop: "გვერდის დასაწყისში დაბრუნება",
     newsletterTitle: "PrimeLabs სიახლეები",
-    newsletterText: "მიიღე ახალი პროდუქტები და სპეციალური შეთავაზებები ელფოსტაზე.",
+    newsletterText:
+      "მიიღე ახალი პროდუქტები და სპეციალური შეთავაზებები ელფოსტაზე.",
     newsletterButton: "გამოწერა",
   },
   en: {
