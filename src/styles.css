@@ -1923,7 +1923,8 @@ footer {
     font-size: 9px;
   }
   .header-row {
-    height: 58px;
+    height: 64px;
+    padding-right: 16px;
   }
   .logo img {
     width: 108px;
@@ -1932,11 +1933,30 @@ footer {
     font-size: 10px;
   }
   .header-actions {
-    gap: 0;
+    gap: 2px;
   }
   .icon-button {
     width: 34px;
     height: 36px;
+  }
+  .menu-button {
+    width: 42px;
+    height: 42px;
+    margin-left: 3px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: var(--surface);
+    box-shadow: 0 5px 16px rgba(23, 18, 25, 0.08);
+  }
+  .menu-button:hover,
+  .menu-button:active {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .menu-button svg {
+    width: 21px;
+    height: 21px;
   }
   .bag {
     width: 36px;
