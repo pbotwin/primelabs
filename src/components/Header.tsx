@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 import type { CopyKey } from "../data/translations";
-import type { Language } from "../types";
+import type { Language, Product } from "../types";
 import { IconButton } from "./IconButton";
 
 interface Props {
@@ -28,6 +28,8 @@ interface Props {
   onHome: () => void;
   query: string;
   onQuery: (value: string) => void;
+  searchResults: Product[];
+  onSearchProduct: (product: Product) => void;
 }
 export function Header({
   language,
@@ -43,6 +45,8 @@ export function Header({
   onHome,
   query,
   onQuery,
+  searchResults,
+  onSearchProduct,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -164,6 +168,31 @@ export function Header({
               <button onClick={() => onQuery("")}>
                 <X />
               </button>
+            )}
+            {query && (
+              <div className="search-results" role="listbox">
+                {searchResults.length ? (
+                  searchResults.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => {
+                        setSearchOpen(false);
+                        onSearchProduct(product);
+                      }}
+                    >
+                      <img src={product.image} alt="" />
+                      <span>
+                        <small>{product.brand}</small>
+                        <strong>{product.name}</strong>
+                      </span>
+                      <b>₾{product.price.toFixed(2)}</b>
+                    </button>
+                  ))
+                ) : (
+                  <p>{t("empty")}</p>
+                )}
+              </div>
             )}
           </div>
         )}

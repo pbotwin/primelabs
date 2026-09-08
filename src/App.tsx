@@ -2,9 +2,11 @@ import { useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
+  Heart,
   Headphones,
   Search,
   Truck,
+  X,
 } from "lucide-react";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
@@ -121,8 +123,7 @@ export function App() {
         savedCount={saved.length}
         savedOnly={savedOnly}
         onSaved={() => {
-          setSavedOnly((v) => !v);
-          setCategory("all");
+          setSavedOnly(true);
         }}
         cartCount={Object.values(cart).reduce((sum, value) => sum + value, 0)}
         onCart={() => setCartOpen(true)}
@@ -131,6 +132,8 @@ export function App() {
         onHome={reset}
         query={query}
         onQuery={changeQuery}
+        searchResults={query ? visible.slice(0, 6) : []}
+        onSearchProduct={setSelectedProduct}
       />
       <main>
         <section className="featured shell" aria-label="Featured products">
@@ -278,6 +281,68 @@ export function App() {
         onContact={() => setContactOpen(true)}
         onNewsletter={() => setNewsletterOpen(true)}
       />
+      {savedOnly && (
+        <div
+          className="saved-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSavedOnly(false);
+          }}
+        >
+          <aside className="saved-panel" role="dialog" aria-modal="true">
+            <header>
+              <div>
+                <span>{saved.length}</span>
+                <h2>{t("saved")}</h2>
+              </div>
+              <button onClick={() => setSavedOnly(false)} aria-label="Close">
+                <X />
+              </button>
+            </header>
+            {saved.length ? (
+              <div className="saved-list">
+                {products
+                  .filter((product) => saved.includes(product.id))
+                  .map((product) => (
+                    <article key={product.id}>
+                      <button
+                        className="saved-product"
+                        onClick={() => {
+                          setSavedOnly(false);
+                          setSelectedProduct(product);
+                        }}
+                      >
+                        <img src={product.image} alt="" />
+                        <span>
+                          <small>{product.brand}</small>
+                          <strong>{product.name}</strong>
+                          <b>₾{product.price.toFixed(2)}</b>
+                        </span>
+                      </button>
+                      <button
+                        className="saved-remove"
+                        onClick={() => toggleSave(product.id)}
+                        aria-label={`${t("saved")}: ${product.name}`}
+                      >
+                        <Heart fill="currentColor" />
+                      </button>
+                    </article>
+                  ))}
+              </div>
+            ) : (
+              <div className="saved-empty">
+                <Heart />
+                <h3>{t("empty")}</h3>
+                <button
+                  className="button primary"
+                  onClick={() => setSavedOnly(false)}
+                >
+                  {t("shop")}
+                </button>
+              </div>
+            )}
+          </aside>
+        </div>
+      )}
       <ProductDialog
         language={language}
         product={selectedProduct}

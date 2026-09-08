@@ -266,7 +266,7 @@ select:focus-visible {
   background: var(--surface);
   outline: 0;
 }
-.search-panel button {
+.search-panel > button {
   width: 36px;
   height: 36px;
   margin-left: -49px;
@@ -1164,6 +1164,199 @@ footer {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Immediate search and saved-product surfaces */
+.search-results {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% - 7px);
+  left: var(--gutter);
+  right: var(--gutter);
+  max-height: min(430px, calc(100dvh - 150px));
+  padding: 7px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: 0 22px 55px rgba(23, 18, 25, 0.2);
+}
+.search-results > button {
+  position: static;
+  width: 100%;
+  height: auto;
+  min-height: 58px;
+  margin: 0;
+  padding: 7px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+}
+.search-results > button:hover {
+  background: var(--soft);
+}
+.search-results img {
+  width: 46px;
+  height: 46px;
+  padding: 4px;
+  object-fit: contain;
+  border-radius: 9px;
+  background: var(--soft);
+  mix-blend-mode: multiply;
+}
+.search-results span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.search-results small {
+  color: var(--brand-deep);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.search-results strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.search-results b {
+  color: var(--ink);
+  font-size: 11px;
+}
+.search-results > p {
+  padding: 24px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+.saved-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  justify-items: end;
+  background: rgba(23, 18, 25, 0.58);
+  backdrop-filter: blur(6px);
+}
+.saved-panel {
+  width: min(100%, 430px);
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--surface);
+  box-shadow: -20px 0 60px rgba(16, 10, 18, 0.25);
+}
+.saved-panel > header {
+  min-height: 78px;
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.saved-panel > header span {
+  color: var(--brand-deep);
+  font-size: 9px;
+  font-weight: 800;
+}
+.saved-panel > header h2 {
+  margin-top: 2px;
+  color: var(--ink);
+  font-size: 22px;
+}
+.saved-panel > header button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft);
+}
+.saved-list {
+  padding: 10px 16px 20px;
+  overflow-y: auto;
+}
+.saved-list article {
+  position: relative;
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.saved-product {
+  width: 100%;
+  padding: 0 42px 0 0;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  text-align: left;
+}
+.saved-product img {
+  width: 76px;
+  height: 82px;
+  padding: 6px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--soft);
+  mix-blend-mode: multiply;
+}
+.saved-product span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.saved-product small {
+  color: var(--brand-deep);
+  font-size: 7px;
+  font-weight: 800;
+}
+.saved-product strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+.saved-product b {
+  color: var(--ink);
+  font-size: 13px;
+}
+.saved-remove {
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+.saved-remove svg {
+  width: 15px;
+}
+.saved-empty {
+  padding: 28px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.saved-empty > svg {
+  width: 42px;
+  height: 42px;
+  color: var(--muted);
+}
+.saved-empty h3 {
+  margin: 12px 0 18px;
+  color: var(--ink);
 }
 
 /* Refined desktop composition and in-app product details. */
