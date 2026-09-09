@@ -15,6 +15,7 @@ export function IconButton({
     <button
       className={`icon-button ${className}`}
       aria-label={label}
+      data-tooltip={label}
       {...props}
     >
       {children}

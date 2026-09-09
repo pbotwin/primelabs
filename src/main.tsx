@@ -9,6 +9,7 @@ import "./styles/header-search.scss";
 import "./styles/catalog-responsive.scss";
 import "./styles/product-dialog.scss";
 import "./styles/motion.scss";
+import "./styles/typography.scss";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root application element");

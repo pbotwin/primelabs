@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   Cookie,
@@ -122,7 +122,8 @@ export function App() {
   const [brand, setBrand] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [query, setQuery] = useState("");
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [headerQuery, setHeaderQuery] = useState("");
   const [sort, setSort] = useState<CatalogSort>("featured");
   const [savedOpen, setSavedOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
@@ -144,8 +145,6 @@ export function App() {
     EMPTY_PRODUCT_IDS,
     isStringArray,
   );
-  const catalogRef = useRef<HTMLDivElement>(null);
-  const [searchHeight, setSearchHeight] = useState(0);
   const t = (key: string) => {
     const translated = (copy[language] as Record<string, string>)[key];
     if (translated) return translated;
@@ -166,23 +165,30 @@ export function App() {
       brand,
       minimumPrice: minPrice === "" ? 0 : Number(minPrice),
       maximumPrice: maxPrice === "" ? Infinity : Number(maxPrice),
-      query,
+      query: catalogQuery,
       sort,
     });
-  }, [category, subcategory, brand, minPrice, maxPrice, query, sort]);
+  }, [category, subcategory, brand, minPrice, maxPrice, catalogQuery, sort]);
+  const headerSearchResults = useMemo(
+    () =>
+      headerQuery
+        ? filterProducts(products, {
+            category: "all",
+            brand: "all",
+            minimumPrice: 0,
+            maximumPrice: Infinity,
+            query: headerQuery,
+            sort: "featured",
+          }).slice(0, 6)
+        : [],
+    [headerQuery],
+  );
   const filter = (id: Category) => {
     setPage(1);
     setCategory(id);
     setSubcategory("all");
     setBrand("all");
     setSavedOpen(false);
-  };
-  const changeQuery = (value: string) => {
-    setPage(1);
-    if (value && query === "")
-      setSearchHeight(catalogRef.current?.offsetHeight ?? 0);
-    if (value === "") setSearchHeight(0);
-    setQuery(value);
   };
   const reset = () => {
     setPage(1);
@@ -191,8 +197,8 @@ export function App() {
     setBrand("all");
     setMinPrice("");
     setMaxPrice("");
-    setQuery("");
-    setSearchHeight(0);
+    setCatalogQuery("");
+    setHeaderQuery("");
     setSavedOpen(false);
   };
   const toggleSave = (id: string) =>
@@ -288,9 +294,9 @@ export function App() {
         onContact={() => setContactOpen(true)}
         onNewsletter={() => setNewsletterOpen(true)}
         onHome={reset}
-        query={query}
-        onQuery={changeQuery}
-        searchResults={query ? visible.slice(0, 6) : []}
+        query={headerQuery}
+        onQuery={setHeaderQuery}
+        searchResults={headerSearchResults}
         onSearchProduct={openProduct}
       />
       <main>
@@ -300,7 +306,9 @@ export function App() {
           onOpenProduct={openProduct}
           t={t}
         />
-        <section className="shop shell">
+        <section
+          className={visible.length ? "shop shell" : "shop shop--empty shell"}
+        >
           <div className="catalog-tools" id="categories">
             <div className="category-list">
               {categories.map((item) => (
@@ -436,6 +444,31 @@ export function App() {
                   </label>
                 </div>
               </div>
+              <label className="catalog-filter__search">
+                <span>{t("search")}</span>
+                <span className="catalog-filter__search-field">
+                  <Search aria-hidden="true" />
+                  <input
+                    type="text"
+                    inputMode="search"
+                    value={catalogQuery}
+                    onChange={(event) => {
+                      setPage(1);
+                      setCatalogQuery(event.target.value);
+                    }}
+                    placeholder={t("search")}
+                  />
+                  {catalogQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCatalogQuery("")}
+                      aria-label={t("close")}
+                    >
+                      <X />
+                    </button>
+                  )}
+                </span>
+              </label>
               <label>
                 <span>{t("sort")}</span>
                 <select
@@ -461,6 +494,7 @@ export function App() {
               brand !== "all" ||
               minPrice !== "" ||
               maxPrice !== "" ||
+              catalogQuery !== "" ||
               sort !== "featured") && (
               <button onClick={reset}>{t("reset")}</button>
             )}
@@ -469,7 +503,8 @@ export function App() {
             subcategory !== "all" ||
             brand !== "all" ||
             minPrice !== "" ||
-            maxPrice !== "") && (
+            maxPrice !== "" ||
+            catalogQuery !== "") && (
             <div className="applied-filters" aria-label={t("activeFilters")}>
               {category !== "all" && (
                 <button onClick={() => filter("all")}>
@@ -491,6 +526,11 @@ export function App() {
                   {brand} <X />
                 </button>
               )}
+              {catalogQuery && (
+                <button onClick={() => setCatalogQuery("")}>
+                  “{catalogQuery}” <X />
+                </button>
+              )}
               {(minPrice || maxPrice) && (
                 <button
                   onClick={() => {
@@ -503,11 +543,7 @@ export function App() {
               )}
             </div>
           )}
-          <div
-            id="product-grid-anchor"
-            ref={catalogRef}
-            style={searchHeight ? { minHeight: searchHeight } : undefined}
-          >
+          <div id="product-grid-anchor">
             {visible.length ? (
               <div className="product-grid">
                 {paginatedProducts.map((product) => (

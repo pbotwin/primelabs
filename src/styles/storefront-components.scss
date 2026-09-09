@@ -637,6 +637,14 @@ img {
   color: var(--ink);
 }
 
+.shop--empty {
+  padding-bottom: 20px;
+}
+
+.shop--empty + .recently-viewed {
+  padding-top: 20px;
+}
+
 /* Catalog navigation hierarchy */
 .catalog-tools {
   margin: 0 0 16px;
@@ -686,6 +694,64 @@ img {
   padding: 9px 0;
   border-top: 1px solid var(--line);
 }
+.catalog-filter__search {
+  grid-area: search;
+  min-width: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.catalog-filter__search-field {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.catalog-filter__search-field > svg {
+  position: absolute;
+  left: 11px;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.catalog-filter__search-field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 40px 0 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 12px;
+  outline: 0;
+}
+.catalog-filter__search-field input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+.catalog-filter__search-field button {
+  position: absolute;
+  right: 4px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+}
+.catalog-filter__search-field button:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+.catalog-filter__search-field button svg {
+  width: 14px;
+  height: 14px;
+}
 .catalog-filter__brand {
   padding: 9px 0;
   display: grid;
@@ -730,8 +796,8 @@ img {
   margin: 0;
   padding: 9px 0 0;
   display: grid;
-  grid-template-columns: auto auto;
-  grid-template-areas: "price sort";
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  grid-template-areas: "price search sort";
   align-items: end;
   row-gap: 8px;
   column-gap: 10px;
@@ -868,8 +934,8 @@ img {
     height: 36px;
   }
   .sort {
-    grid-template-columns: auto minmax(150px, 190px);
-    grid-template-areas: "price sort";
+    grid-template-columns: auto minmax(180px, 1fr) minmax(150px, 190px);
+    grid-template-areas: "price search sort";
     column-gap: 12px;
     align-items: end;
   }

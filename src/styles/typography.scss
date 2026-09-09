@@ -1,0 +1,258 @@
+/* Storefront type hierarchy. This file is loaded last so responsive component
+   styles cannot accidentally reduce important shopping information. */
+body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.announcement {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.site-header__nav a,
+.site-header__nav button {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.site-header__language {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.featured__label,
+.eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.featured__slide h1 {
+  font-size: clamp(30px, 3.5vw, 46px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.featured__slide p,
+.featured__action {
+  font-size: 13px;
+}
+
+.featured__supporting h2 {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.featured__supporting strong {
+  font-size: 15px;
+}
+
+.section-heading h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+
+.section-heading > p {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.category b {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.category small {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.catalog-filter__brand-label,
+.price-filter > span,
+.sort label {
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.catalog-filter__brand-option,
+.sort select,
+.price-filter input {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.catalog-summary .result-count {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.applied-filters button,
+.filter-summary button {
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.product-card__brand {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.product-card__content h3 {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.product-card__subtitle {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.product-card__meta {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.product-card__price small,
+.product-card__price del {
+  font-size: 10px;
+}
+
+.product-card__price strong {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.site-header__search-results small,
+.saved-product small {
+  font-size: 9px;
+}
+
+.site-header__search-results strong,
+.site-header__search-results b,
+.saved-product strong {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.saved-product b {
+  font-size: 14px;
+}
+
+.values h3 {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.values p,
+.footer-brand p,
+.footer-newsletter p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.footer-grid h3 {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.footer-grid nav > a,
+.footer-grid nav > button {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.dialog-copy h2,
+.contact-dialog .dialog-scroll > h2 {
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.08;
+}
+
+.dialog-copy > p,
+.contact-dialog .dialog-scroll > p {
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.product-facts summary {
+  font-size: 12px;
+}
+
+.product-facts dl,
+.product-facts details > p,
+.related-products small {
+  font-size: 11px;
+}
+
+.related-products span b,
+.related-products strong {
+  font-size: 11px;
+}
+
+@media (max-width: 639px) {
+  body {
+    font-size: 14px;
+  }
+
+  .announcement {
+    font-size: 10px;
+  }
+
+  .site-header__mobile-menu a,
+  .site-header__mobile-menu button {
+    font-size: 11px;
+  }
+
+  .featured__slide h1 {
+    font-size: clamp(20px, 5.8vw, 25px);
+    line-height: 1.08;
+  }
+
+  .featured__slide p,
+  .featured__action {
+    font-size: 10px;
+  }
+
+  .featured__supporting h2 {
+    font-size: 11px;
+  }
+
+  .section-heading h2 {
+    font-size: 25px;
+  }
+
+  .category b {
+    font-size: 11px;
+  }
+
+  .catalog-filter__brand-option,
+  .sort select,
+  .price-filter input {
+    font-size: 10px;
+  }
+
+  .product-card__content h3 {
+    min-height: 34px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .product-card__subtitle {
+    font-size: 10px;
+  }
+
+  .product-card__price strong {
+    font-size: 16px;
+  }
+
+  .dialog-copy h2,
+  .contact-dialog .dialog-scroll > h2 {
+    font-size: 27px;
+  }
+}

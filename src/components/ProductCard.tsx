@@ -55,6 +55,7 @@ export function ProductCard({
           onClick={onSave}
           aria-label={`${t("saved")}: ${product.name}`}
           aria-pressed={saved}
+          data-tooltip={t("saved")}
         >
           <Heart fill={saved ? "currentColor" : "none"} />
         </button>

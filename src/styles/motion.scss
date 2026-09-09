@@ -124,6 +124,107 @@ main {
   }
 }
 
+/* Helpful labels for icon-only commerce controls. */
+@media (hover: hover) and (pointer: fine) and (min-width: 800px) {
+  :where([data-tooltip]) {
+    position: relative;
+  }
+
+  [data-tooltip]::after {
+    position: absolute;
+    z-index: 30;
+    right: 50%;
+    bottom: calc(100% + 8px);
+    max-width: 190px;
+    padding: 6px 9px;
+    transform: translate(50%, 4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    background: var(--ink);
+    box-shadow: 0 8px 20px rgba(23, 18, 25, 0.16);
+    color: #fff;
+    content: attr(data-tooltip);
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease;
+  }
+
+  [data-tooltip]:hover::after,
+  [data-tooltip]:focus-visible::after {
+    transform: translate(50%, 0);
+    opacity: 1;
+  }
+
+  .site-header [data-tooltip]::after {
+    top: calc(100% + 8px);
+    bottom: auto;
+    transform: translate(50%, -4px);
+  }
+
+  .site-header [data-tooltip]:hover::after,
+  .site-header [data-tooltip]:focus-visible::after {
+    transform: translate(50%, 0);
+  }
+}
+
+.product-card__save--active svg {
+  animation: favorite-pop 0.32s cubic-bezier(0.2, 1.5, 0.5, 1);
+}
+
+.product-card__buy--added svg {
+  animation: cart-confirm 0.35s ease-out;
+}
+
+@media (hover: hover) {
+  .site-header__bag:hover svg {
+    animation: bag-wiggle 0.42s ease;
+  }
+
+  .product-card__buy:not(.product-card__buy--added):hover svg {
+    transform: rotate(90deg);
+  }
+}
+
+.product-card__buy svg {
+  transition: transform 0.2s ease;
+}
+
+@keyframes favorite-pop {
+  50% {
+    transform: scale(1.28) rotate(-8deg);
+  }
+}
+
+@keyframes cart-confirm {
+  45% {
+    transform: scale(1.25);
+  }
+}
+
+@keyframes bag-wiggle {
+  30% {
+    transform: rotate(-8deg);
+  }
+  65% {
+    transform: rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card__save--active svg,
+  .product-card__buy--added svg,
+  .site-header__bag:hover svg {
+    animation: none;
+  }
+}
+
 /* Clear navigation feedback and a tighter campaign slider */
 .site-header__nav a,
 .site-header__nav button {

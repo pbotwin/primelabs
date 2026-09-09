@@ -68,11 +68,16 @@ export function Header({
       if (
         !searchPanelRef.current?.contains(target) &&
         !searchToggleRef.current?.contains(target)
-      )
+      ) {
         setSearchOpen(false);
+        onQuery("");
+      }
     };
     const closeWithEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSearchOpen(false);
+      if (event.key === "Escape") {
+        setSearchOpen(false);
+        onQuery("");
+      }
     };
     document.addEventListener("pointerdown", closeSearch);
     document.addEventListener("keydown", closeWithEscape);
@@ -80,7 +85,7 @@ export function Header({
       document.removeEventListener("pointerdown", closeSearch);
       document.removeEventListener("keydown", closeWithEscape);
     };
-  }, [searchOpen]);
+  }, [onQuery, searchOpen]);
   const goHome = () => {
     setSearchOpen(false);
     setMenuOpen(false);
@@ -102,6 +107,7 @@ export function Header({
             onClick={() => {
               setMenuOpen((open) => !open);
               setSearchOpen(false);
+              onQuery("");
             }}
             aria-expanded={menuOpen}
           >
@@ -130,6 +136,7 @@ export function Header({
               <IconButton
                 label={t("searchLabel")}
                 onClick={() => {
+                  if (searchOpen) onQuery("");
                   setSearchOpen((v) => !v);
                   setMenuOpen(false);
                 }}
@@ -147,7 +154,11 @@ export function Header({
             >
               <Heart fill={savedOpen ? "currentColor" : "none"} />
             </IconButton>
-            <button className="site-header__bag" onClick={onCart}>
+            <button
+              className="site-header__bag"
+              onClick={onCart}
+              aria-label={t("cart")}
+            >
               <ShoppingBag />
               <span>{t("cart")}</span>
               {cartCount > 0 && <b>{cartCount}</b>}
@@ -159,14 +170,15 @@ export function Header({
             <Search />
             <input
               autoFocus
-              type="search"
+              type="text"
+              inputMode="search"
               value={query}
               onChange={(e) => onQuery(e.target.value)}
               placeholder={t("search")}
               aria-label={t("search")}
             />
             {query && (
-              <button onClick={() => onQuery("")}>
+              <button onClick={() => onQuery("")} aria-label={t("close")}>
                 <X />
               </button>
             )}
@@ -179,6 +191,7 @@ export function Header({
                       type="button"
                       onClick={() => {
                         setSearchOpen(false);
+                        onQuery("");
                         onSearchProduct(product);
                       }}
                     >

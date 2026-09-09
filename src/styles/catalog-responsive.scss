@@ -131,7 +131,13 @@
   .sort {
     width: 100%;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "price sort"
+      "search search";
     justify-content: stretch;
+  }
+  .catalog-filter__search {
+    width: 100%;
   }
   .price-filter,
   .price-fields {
@@ -226,8 +232,15 @@
     gap: 7px;
   }
   .catalog-filter__brand-list {
+    display: flex;
     flex-wrap: wrap;
     overflow: visible;
+  }
+  .sort {
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 200px);
+    grid-template-areas:
+      "price sort"
+      "search search";
   }
 }
 
@@ -316,12 +329,14 @@
   }
   .catalog-filter__brand-list {
     width: 100%;
+    display: flex;
     flex-wrap: wrap;
     overflow: visible;
   }
   .catalog-filter__brand-option {
+    width: auto;
     min-height: 34px;
-    padding-inline: 13px;
+    padding-inline: 8px;
     max-width: 100%;
     overflow: visible;
     text-overflow: clip;
@@ -330,7 +345,8 @@
     min-height: 56px;
     margin: 0;
     padding-top: 10px;
-    grid-template-columns: 174px minmax(170px, 200px);
+    grid-template-columns: 174px minmax(220px, 1fr) minmax(170px, 200px);
+    grid-template-areas: "price search sort";
     justify-content: space-between;
   }
   .catalog-summary {
