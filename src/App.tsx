@@ -1,15 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowRight,
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  Headphones,
-  Search,
-  Truck,
-  X,
-} from "lucide-react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { BadgeCheck, Search, X } from "lucide-react";
+import { FeaturedProducts } from "./components/FeaturedProducts";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { ProductCard } from "./components/ProductCard";
@@ -17,11 +8,16 @@ import { ProductDialog } from "./components/ProductDialog";
 import { CartDrawer } from "./components/CartDrawer";
 import { ContactDialog } from "./components/ContactDialog";
 import { NewsletterDialog } from "./components/NewsletterDialog";
+import { SavedProductsDialog } from "./components/SavedProductsDialog";
+import { RecentlyViewed } from "./components/RecentlyViewed";
+import { StoreBenefits } from "./components/StoreBenefits";
+import { STORE } from "./config/store";
 import { products } from "./data/products";
 import { copy, type CopyKey } from "./data/translations";
-import { productSearchText } from "./data/uiCopy";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import type { Category, Language, ProductVariant } from "./types";
+import { filterProducts, type CatalogSort } from "./utils/catalog";
+import { isCart, isLanguage, isStringArray } from "./utils/storageValidators";
 
 const categories: { id: Category; image?: string }[] = [
   { id: "all" },
@@ -82,27 +78,35 @@ const featuredBundle = products.find((product) => product.id === "100")!;
 const featuredCreatine = products.find((product) => product.id === "101")!;
 const featuredBcaa = products.find((product) => product.id === "38")!;
 const featuredSlides = [featuredBundle, featuredCreatine, featuredBcaa];
+const EMPTY_PRODUCT_IDS: string[] = [];
+const EMPTY_CART: Record<string, number> = {};
 
 export function App() {
   const [language, setLanguage] = useLocalStorage<Language>(
     "primelabs-language",
     "ka",
+    isLanguage,
   );
-  const [saved, setSaved] = useLocalStorage<string[]>("primelabs-saved", []);
+  const [saved, setSaved] = useLocalStorage<string[]>(
+    "primelabs-saved",
+    EMPTY_PRODUCT_IDS,
+    isStringArray,
+  );
   const [category, setCategory] = useState<Category>("all");
   const [subcategory, setSubcategory] = useState("all");
   const [brand, setBrand] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("featured");
-  const [savedOnly, setSavedOnly] = useState(false);
+  const [sort, setSort] = useState<CatalogSort>("featured");
+  const [savedOpen, setSavedOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[number] | null
   >(null);
   const [cart, setCart] = useLocalStorage<Record<string, number>>(
     "primelabs-cart",
-    {},
+    EMPTY_CART,
+    isCart,
   );
   const [cartOpen, setCartOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
@@ -110,60 +114,36 @@ export function App() {
   const [toast, setToast] = useState("");
   const [addedProductId, setAddedProductId] = useState("");
   const [page, setPage] = useState(1);
-  const [featuredSlide, setFeaturedSlide] = useState(0);
-  const [featuredPaused, setFeaturedPaused] = useState(false);
-  const [recent, setRecent] = useLocalStorage<string[]>("primelabs-recent", []);
+  const [recent, setRecent] = useLocalStorage<string[]>(
+    "primelabs-recent",
+    EMPTY_PRODUCT_IDS,
+    isStringArray,
+  );
   const catalogRef = useRef<HTMLDivElement>(null);
-  const featuredTouch = useRef<number | null>(null);
   const [searchHeight, setSearchHeight] = useState(0);
   const t = (key: CopyKey) => copy[language][key];
   const visible = useMemo(() => {
-    const term = query.trim().toLocaleLowerCase();
-    const minimum = minPrice === "" ? 0 : Number(minPrice);
-    const maximum = maxPrice === "" ? Infinity : Number(maxPrice);
-    return products
-      .filter(
-        (p) =>
-          (term !== "" ||
-            category === "all" ||
-            p.categories.includes(category)) &&
-          (term !== "" ||
-            subcategory === "all" ||
-            subcategories[category]
-              ?.find((item) => item.id === subcategory)
-              ?.products.includes(p.id)) &&
-          (term !== "" || brand === "all" || p.brand === brand) &&
-          p.price >= minimum &&
-          p.price <= maximum &&
-          (!savedOnly || saved.includes(p.id)) &&
-          `${p.brand} ${p.name} ${p.subtitle} ${p.description.ka} ${p.description.en} ${p.variants.map((variant) => variant.name).join(" ")} ${productSearchText(p.id)}`
-            .toLocaleLowerCase()
-            .includes(term),
-      )
-      .sort((a, b) =>
-        sort === "low"
-          ? a.price - b.price
-          : sort === "high"
-            ? b.price - a.price
-            : 0,
-      );
-  }, [
-    category,
-    subcategory,
-    brand,
-    minPrice,
-    maxPrice,
-    query,
-    sort,
-    savedOnly,
-    saved,
-  ]);
+    const activeSubcategory = subcategories[category]?.find(
+      (item) => item.id === subcategory,
+    );
+    return filterProducts(products, {
+      category,
+      subcategoryProductIds: activeSubcategory
+        ? new Set(activeSubcategory.products)
+        : undefined,
+      brand,
+      minimumPrice: minPrice === "" ? 0 : Number(minPrice),
+      maximumPrice: maxPrice === "" ? Infinity : Number(maxPrice),
+      query,
+      sort,
+    });
+  }, [category, subcategory, brand, minPrice, maxPrice, query, sort]);
   const filter = (id: Category) => {
     setPage(1);
     setCategory(id);
     setSubcategory("all");
     setBrand("all");
-    setSavedOnly(false);
+    setSavedOpen(false);
   };
   const changeQuery = (value: string) => {
     setPage(1);
@@ -181,7 +161,7 @@ export function App() {
     setMaxPrice("");
     setQuery("");
     setSearchHeight(0);
-    setSavedOnly(false);
+    setSavedOpen(false);
   };
   const toggleSave = (id: string) =>
     setSaved((items) =>
@@ -224,18 +204,6 @@ export function App() {
     }, 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
-  useEffect(() => {
-    if (
-      featuredPaused ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-      return;
-    const timer = window.setInterval(
-      () => setFeaturedSlide((slide) => (slide + 1) % featuredSlides.length),
-      5500,
-    );
-    return () => window.clearInterval(timer);
-  }, [featuredPaused]);
   const cartItems = products.flatMap((product) =>
     Object.entries(cart)
       .filter(
@@ -253,11 +221,14 @@ export function App() {
   const validSaved = saved.filter((id) =>
     products.some((product) => product.id === id),
   );
-  const pageCount = Math.max(1, Math.ceil(visible.length / 20));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(visible.length / STORE.productsPerPage),
+  );
   const currentPage = Math.min(page, pageCount);
   const paginatedProducts = visible.slice(
-    (currentPage - 1) * 20,
-    currentPage * 20,
+    (currentPage - 1) * STORE.productsPerPage,
+    currentPage * STORE.productsPerPage,
   );
   return (
     <div
@@ -268,17 +239,17 @@ export function App() {
       }}
     >
       <a className="skip" href="#product-grid-anchor">
-        Skip to products
+        {t("skipProducts")}
       </a>
       <Header
         language={language}
         onLanguage={() => setLanguage(language === "ka" ? "en" : "ka")}
         t={t}
         savedCount={validSaved.length}
-        savedOnly={savedOnly}
+        savedOpen={savedOpen}
         onSaved={() => {
           setPage(1);
-          setSavedOnly(true);
+          setSavedOpen(true);
         }}
         cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onCart={() => setCartOpen(true)}
@@ -291,127 +262,12 @@ export function App() {
         onSearchProduct={openProduct}
       />
       <main>
-        <section className="featured shell" aria-label="Featured products">
-          <div
-            className="featured-main-slider"
-            aria-roledescription="carousel"
-            onMouseEnter={() => setFeaturedPaused(true)}
-            onMouseLeave={() => setFeaturedPaused(false)}
-            onTouchStart={(event) => {
-              featuredTouch.current = event.touches[0]?.clientX ?? null;
-              setFeaturedPaused(true);
-            }}
-            onTouchEnd={(event) => {
-              const start = featuredTouch.current;
-              const end = event.changedTouches[0]?.clientX;
-              if (
-                start !== null &&
-                end !== undefined &&
-                Math.abs(start - end) > 45
-              )
-                setFeaturedSlide((slide) =>
-                  start > end
-                    ? (slide + 1) % featuredSlides.length
-                    : (slide - 1 + featuredSlides.length) %
-                      featuredSlides.length,
-                );
-              featuredTouch.current = null;
-              setFeaturedPaused(false);
-            }}
-          >
-            {featuredSlides.map((product, index) => {
-              const discount = product.previousPrice
-                ? Math.round((1 - product.price / product.previousPrice) * 100)
-                : 0;
-              return (
-                <button
-                  key={product.id}
-                  className={
-                    featuredSlide === index
-                      ? "featured-main featured-main-current active"
-                      : "featured-main featured-main-current"
-                  }
-                  onClick={() => openProduct(product)}
-                  aria-hidden={featuredSlide !== index}
-                  tabIndex={featuredSlide === index ? 0 : -1}
-                >
-                  <div>
-                    <span className="deal-label">
-                      {discount ? `−${discount}% ${t("sale")}` : product.brand}
-                    </span>
-                    <h1>{product.name}</h1>
-                    <p>
-                      {product.from && <small>{t("from")}</small>}
-                      <strong>₾{product.price.toFixed(2)}</strong>
-                      {product.previousPrice && (
-                        <del>₾{product.previousPrice.toFixed(2)}</del>
-                      )}
-                    </p>
-                    <span className="featured-action">
-                      {t("buy")} <ArrowRight />
-                    </span>
-                  </div>
-                  <img
-                    src={product.image}
-                    alt={`${product.brand} ${product.name}`}
-                  />
-                </button>
-              );
-            })}
-            <button
-              className="featured-slider-arrow previous"
-              onClick={() =>
-                setFeaturedSlide(
-                  (slide) =>
-                    (slide - 1 + featuredSlides.length) % featuredSlides.length,
-                )
-              }
-              aria-label="Previous product"
-            >
-              <ChevronLeft />
-            </button>
-            <button
-              className="featured-slider-arrow next"
-              onClick={() =>
-                setFeaturedSlide((slide) => (slide + 1) % featuredSlides.length)
-              }
-              aria-label="Next product"
-            >
-              <ChevronRight />
-            </button>
-            <div className="featured-slider-dots">
-              {featuredSlides.map((product, index) => (
-                <button
-                  key={product.id}
-                  className={featuredSlide === index ? "active" : ""}
-                  onClick={() => setFeaturedSlide(index)}
-                  aria-label={`Slide ${index + 1}: ${product.name}`}
-                  aria-current={featuredSlide === index ? "true" : undefined}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="featured-side">
-            <button onClick={() => openProduct(featuredCreatine)}>
-              <img src="./creatine.webp" alt="Creatine Monohydrate" />
-              <div>
-                <span>{t("bestseller")}</span>
-                <h2>Creatine 300g</h2>
-                <strong>₾50.00</strong>
-              </div>
-              <ArrowRight />
-            </button>
-            <button onClick={() => openProduct(featuredBcaa)}>
-              <img src="./vplab.webp" alt="VPLAB BCAA" />
-              <div>
-                <span>VPLAB</span>
-                <h2>BCAA 8:1:1</h2>
-                <strong>₾80.00</strong>
-              </div>
-              <ArrowRight />
-            </button>
-          </div>
-        </section>
+        <FeaturedProducts
+          slides={featuredSlides}
+          supportingProducts={[featuredCreatine, featuredBcaa]}
+          onOpenProduct={openProduct}
+          t={t}
+        />
         <section className="shop shell">
           <div className="catalog-tools" id="categories">
             <div className="category-list">
@@ -419,12 +275,10 @@ export function App() {
                 <button
                   key={item.id}
                   className={
-                    category === item.id && !savedOnly
-                      ? "category active"
-                      : "category"
+                    category === item.id ? "category active" : "category"
                   }
                   onClick={() => filter(item.id)}
-                  aria-pressed={category === item.id && !savedOnly}
+                  aria-pressed={category === item.id}
                 >
                   {item.image ? (
                     <span>
@@ -542,7 +396,7 @@ export function App() {
                   value={sort}
                   onChange={(event) => {
                     setPage(1);
-                    setSort(event.target.value);
+                    setSort(event.target.value as CatalogSort);
                   }}
                 >
                   <option value="featured">{t("featured")}</option>
@@ -561,16 +415,16 @@ export function App() {
               brand !== "all" ||
               minPrice !== "" ||
               maxPrice !== "" ||
-              sort !== "featured" ||
-              savedOnly) && <button onClick={reset}>{t("reset")}</button>}
+              sort !== "featured") && (
+              <button onClick={reset}>{t("reset")}</button>
+            )}
           </div>
           {(category !== "all" ||
             subcategory !== "all" ||
             brand !== "all" ||
             minPrice !== "" ||
-            maxPrice !== "" ||
-            savedOnly) && (
-            <div className="applied-filters" aria-label="Active filters">
+            maxPrice !== "") && (
+            <div className="applied-filters" aria-label={t("activeFilters")}>
               {category !== "all" && (
                 <button onClick={() => filter("all")}>
                   {t(category)} <X />
@@ -599,11 +453,6 @@ export function App() {
                   }}
                 >
                   ₾{minPrice || 0}–{maxPrice || "∞"} <X />
-                </button>
-              )}
-              {savedOnly && (
-                <button onClick={() => setSavedOnly(false)}>
-                  {t("saved")} <X />
                 </button>
               )}
             </div>
@@ -642,8 +491,8 @@ export function App() {
                 </button>
               </div>
             )}
-            {visible.length > 20 && (
-              <nav className="pagination" aria-label="Product pages">
+            {visible.length > STORE.productsPerPage && (
+              <nav className="pagination" aria-label={t("productPages")}>
                 <button
                   className="pagination-step"
                   disabled={currentPage === 1}
@@ -679,137 +528,40 @@ export function App() {
             )}
           </div>
         </section>
-        {recent.length > 0 && (
-          <section
-            className="recently-viewed shell"
-            aria-labelledby="recent-title"
-          >
-            <div className="recent-heading">
-              <div>
-                <span>
-                  {language === "ka" ? "შენი ისტორია" : "Your history"}
-                </span>
-                <h2 id="recent-title">
-                  {language === "ka" ? "ბოლოს ნანახი" : "Recently viewed"}
-                </h2>
-              </div>
-              <button onClick={() => setRecent([])}>{t("reset")}</button>
-            </div>
-            <div className="recent-grid">
-              {products
-                .filter((product) => recent.includes(product.id))
-                .sort((a, b) => recent.indexOf(a.id) - recent.indexOf(b.id))
-                .slice(0, 4)
-                .map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    saved={saved.includes(product.id)}
-                    onSave={() => toggleSave(product.id)}
-                    onOpen={() => openProduct(product)}
-                    onAdd={() =>
-                      product.variants.length || !product.inStock
-                        ? openProduct(product)
-                        : quickAdd(product.id)
-                    }
-                    added={addedProductId === product.id}
-                    t={t}
-                  />
-                ))}
-            </div>
-          </section>
-        )}
-        <section className="values shell" id="about">
-          <article>
-            <BadgeCheck />
-            <div>
-              <h3>{t("original")}</h3>
-              <p>{t("originalText")}</p>
-            </div>
-          </article>
-          <article id="delivery">
-            <Truck />
-            <div>
-              <h3>{t("delivery")}</h3>
-              <p>{t("deliveryText")}</p>
-            </div>
-          </article>
-          <article id="support">
-            <Headphones />
-            <div>
-              <h3>{t("help")}</h3>
-              <p>{t("helpText")}</p>
-            </div>
-          </article>
-        </section>
+        <RecentlyViewed
+          language={language}
+          products={products}
+          recentIds={recent}
+          savedIds={saved}
+          addedProductId={addedProductId}
+          onClear={() => setRecent([])}
+          onSave={toggleSave}
+          onOpen={openProduct}
+          onQuickAdd={(product) =>
+            product.variants.length || !product.inStock
+              ? openProduct(product)
+              : quickAdd(product.id)
+          }
+          t={t}
+        />
+        <StoreBenefits t={t} />
       </main>
       <Footer
         t={t}
         onContact={() => setContactOpen(true)}
         onNewsletter={() => setNewsletterOpen(true)}
       />
-      {savedOnly && (
-        <div
-          className="saved-backdrop"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setSavedOnly(false);
-          }}
-        >
-          <aside className="saved-panel" role="dialog" aria-modal="true">
-            <header>
-              <div>
-                <span>{validSaved.length}</span>
-                <h2>{t("saved")}</h2>
-              </div>
-              <button onClick={() => setSavedOnly(false)} aria-label="Close">
-                <X />
-              </button>
-            </header>
-            {validSaved.length ? (
-              <div className="saved-list">
-                {products
-                  .filter((product) => saved.includes(product.id))
-                  .map((product) => (
-                    <article key={product.id}>
-                      <button
-                        className="saved-product"
-                        onClick={() => {
-                          setSavedOnly(false);
-                          setSelectedProduct(product);
-                        }}
-                      >
-                        <img src={product.image} alt="" />
-                        <span>
-                          <small>{product.brand}</small>
-                          <strong>{product.name}</strong>
-                          <b>₾{product.price.toFixed(2)}</b>
-                        </span>
-                      </button>
-                      <button
-                        className="saved-remove"
-                        onClick={() => toggleSave(product.id)}
-                        aria-label={`${t("saved")}: ${product.name}`}
-                      >
-                        <Heart fill="currentColor" />
-                      </button>
-                    </article>
-                  ))}
-              </div>
-            ) : (
-              <div className="saved-empty">
-                <Heart />
-                <h3>{t("empty")}</h3>
-                <button
-                  className="button primary"
-                  onClick={() => setSavedOnly(false)}
-                >
-                  {t("shop")}
-                </button>
-              </div>
-            )}
-          </aside>
-        </div>
-      )}
+      <SavedProductsDialog
+        open={savedOpen}
+        products={products.filter((product) => saved.includes(product.id))}
+        onClose={() => setSavedOpen(false)}
+        onOpenProduct={(product) => {
+          setSavedOpen(false);
+          openProduct(product);
+        }}
+        onRemove={toggleSave}
+        t={t}
+      />
       <ProductDialog
         language={language}
         product={selectedProduct}

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { CheckCircle2, Mail, X } from "lucide-react";
+import { STORE } from "../config/store";
 import type { Language } from "../types";
+import { useModalDialog } from "../hooks/useModalDialog";
 
 const content = {
   ka: {
@@ -9,11 +11,11 @@ const content = {
     text: "გამოიწერე ახალი პროდუქტების, ფასდაკლებებისა და სპეციალური შეთავაზებების შესახებ ინფორმაცია.",
     email: "ელ. ფოსტის მისამართი",
     placeholder: "name@example.com",
-    submit: "გამოწერა",
+    submit: "გამოწერის მოთხოვნა",
     consent:
       "გამოწერით ეთანხმები PrimeLabs-ის სიახლეების მიღებას. გამოწერის გაუქმება ნებისმიერ დროს შეგიძლია.",
-    success: "გამოწერა დასრულებულია",
-    successText: "შემდეგ შეთავაზებას პირდაპირ ელ. ფოსტაზე მიიღებ.",
+    success: "მოთხოვნა მომზადებულია",
+    successText: "გამოწერის დასასრულებლად გააგზავნე გახსნილი ელფოსტა.",
     done: "დასრულება",
     close: "დახურვა",
   },
@@ -23,11 +25,11 @@ const content = {
     text: "Subscribe for new products, price drops, and limited PrimeLabs offers.",
     email: "Email address",
     placeholder: "name@example.com",
-    submit: "Subscribe",
+    submit: "Request subscription",
     consent:
       "By subscribing, you agree to receive PrimeLabs news. You can unsubscribe at any time.",
-    success: "You are subscribed",
-    successText: "The next offer will arrive directly in your inbox.",
+    success: "Your request is ready",
+    successText: "Send the opened email to complete your subscription.",
     done: "Done",
     close: "Close",
   },
@@ -43,14 +45,26 @@ export function NewsletterDialog({
   onClose: () => void;
 }) {
   const [subscribed, setSubscribed] = useState(false);
+  const dialogRef = useModalDialog(open, onClose);
   if (!open) return null;
   const text = content[language];
   const close = () => {
     onClose();
-    setTimeout(() => setSubscribed(false), 200);
+    setSubscribed(false);
   };
-  const submit = (event: FormEvent) => {
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "");
+    const subject = encodeURIComponent("PrimeLabs newsletter subscription");
+    const body = encodeURIComponent(
+      `Please subscribe ${email} to PrimeLabs news.`,
+    );
+    window.open(
+      `mailto:${STORE.email}?subject=${subject}&body=${body}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
     setSubscribed(true);
   };
   return (
@@ -59,10 +73,12 @@ export function NewsletterDialog({
       onMouseDown={(event) => event.target === event.currentTarget && close()}
     >
       <section
+        ref={dialogRef}
         className="newsletter-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="newsletter-title"
+        tabIndex={-1}
       >
         <button
           className="dialog-close"
@@ -94,6 +110,7 @@ export function NewsletterDialog({
               <div>
                 <input
                   id="newsletter-email"
+                  name="email"
                   required
                   type="email"
                   autoComplete="email"

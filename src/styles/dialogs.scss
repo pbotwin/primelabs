@@ -1,0 +1,464 @@
+﻿/* Dialog close controls stay available while long popup content scrolls. */
+.product-dialog > .dialog-close {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: max(14px, calc((100vw - 920px) / 2 + 14px));
+  z-index: 120;
+  box-shadow: 0 6px 20px #1712192b;
+}
+.contact-dialog > .dialog-close {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: max(14px, calc((100vw - 560px) / 2 + 14px));
+  z-index: 120;
+  box-shadow: 0 6px 20px #1712192b;
+}
+@media (max-width: 639px) {
+  .dialog-backdrop {
+    align-items: start;
+    overflow-y: auto;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+    padding-bottom: 20px;
+  }
+  .product-dialog,
+  .contact-dialog {
+    max-height: none;
+  }
+  .product-dialog > .dialog-close,
+  .contact-dialog > .dialog-close {
+    top: calc(env(safe-area-inset-top, 0px) + 24px);
+    right: 24px;
+  }
+}
+
+.newsletter-dialog {
+  position: relative;
+  width: min(620px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: 0 35px 90px #0005;
+}
+.newsletter-content,
+.newsletter-success {
+  padding: 54px 42px 42px;
+  text-align: center;
+}
+.newsletter-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: #f9dcfc;
+  color: var(--brand-deep);
+}
+.newsletter-icon svg {
+  width: 25px;
+  height: 25px;
+}
+.newsletter-content h2,
+.newsletter-success h2 {
+  max-width: 470px;
+  margin: 10px auto 0;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+}
+.newsletter-content > p:not(.eyebrow),
+.newsletter-success p {
+  max-width: 470px;
+  margin: 16px auto 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.newsletter-content form {
+  margin-top: 26px;
+  text-align: left;
+}
+.newsletter-content form label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.newsletter-content form > div {
+  display: flex;
+  gap: 8px;
+}
+.newsletter-content input {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: 0;
+}
+.newsletter-content input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px #e600f51a;
+}
+.newsletter-content small {
+  display: block;
+  max-width: 470px;
+  margin: 14px auto 0;
+  font-size: 9px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.newsletter-success > svg {
+  width: 52px;
+  height: 52px;
+  color: #198754;
+}
+.newsletter-success .button {
+  margin-top: 24px;
+}
+@media (max-width: 520px) {
+  .newsletter-content,
+  .newsletter-success {
+    padding: 52px 20px 26px;
+  }
+  .newsletter-content form > div {
+    display: grid;
+  }
+  .newsletter-content form .button {
+    width: 100%;
+  }
+}
+
+/* High-contrast header counts */
+.icon-button .icon-button__count {
+  top: -5px;
+  right: -5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  color: #fff;
+  background: var(--brand);
+  border: 2px solid var(--canvas);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgb(23 18 25 / 22%);
+}
+.site-header__bag b {
+  top: -7px;
+  right: -7px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  color: #fff;
+  background: var(--brand);
+  border: 2px solid var(--ink);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgb(23 18 25 / 20%);
+}
+@media (max-width: 479px) {
+  .icon-button .icon-button__count,
+  .site-header__bag b {
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 10px;
+  }
+}
+
+/* Stable modal surface and PrimeLabs newsletter treatment. */
+.dialog-backdrop,
+.cart-backdrop {
+  background: rgb(17 12 19 / 78%);
+  backdrop-filter: none;
+}
+.product-dialog,
+.contact-dialog,
+.newsletter-dialog {
+  box-shadow: 0 24px 64px rgb(0 0 0 / 28%);
+}
+.newsletter-dialog {
+  isolation: isolate;
+  color: #fff;
+  background:
+    radial-gradient(circle at 92% 5%, rgb(230 0 245 / 42%), transparent 34%),
+    linear-gradient(145deg, #171219 0%, #241428 100%);
+}
+.newsletter-dialog::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 190px;
+  height: 190px;
+  left: -85px;
+  bottom: -100px;
+  border: 1px solid rgb(230 0 245 / 35%);
+  border-radius: 50%;
+}
+.newsletter-dialog > .dialog-close {
+  color: #fff;
+  background: rgb(255 255 255 / 10%);
+  border-color: rgb(255 255 255 / 18%);
+  box-shadow: none;
+}
+.newsletter-dialog > .dialog-close:hover {
+  color: #210023;
+  background: var(--brand);
+}
+.newsletter-content,
+.newsletter-success {
+  padding: 44px 48px 42px;
+}
+.newsletter-logo {
+  width: 154px;
+  height: 30px;
+  margin: 0 auto 28px;
+  object-fit: contain;
+}
+.newsletter-icon {
+  background: var(--brand);
+  color: #210023;
+}
+.newsletter-content .eyebrow {
+  color: var(--brand);
+}
+.newsletter-content h2,
+.newsletter-success h2 {
+  color: #fff;
+}
+.newsletter-content > p:not(.eyebrow),
+.newsletter-success p {
+  color: rgb(255 255 255 / 72%);
+}
+.newsletter-content form label {
+  color: #fff;
+}
+.newsletter-content input {
+  color: var(--ink);
+  background: #fff;
+  border-color: rgb(255 255 255 / 28%);
+}
+.newsletter-content small {
+  color: rgb(255 255 255 / 50%);
+}
+.newsletter-content form .button {
+  color: #210023;
+  background: var(--brand);
+}
+.newsletter-content form .button:hover {
+  color: var(--ink);
+  background: #fff;
+}
+.newsletter-success > svg {
+  color: var(--brand);
+}
+@media (max-width: 520px) {
+  .newsletter-content,
+  .newsletter-success {
+    padding: 48px 20px 26px;
+  }
+  .newsletter-logo {
+    width: 135px;
+    margin-bottom: 22px;
+  }
+}
+
+/* Keep the dialog frame still; only this inner area is allowed to scroll. */
+.dialog-backdrop {
+  overflow: hidden;
+  align-items: center;
+  padding: 12px;
+}
+.product-dialog,
+.contact-dialog {
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+.product-dialog {
+  display: block;
+}
+.product-dialog .dialog-scroll {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  scrollbar-gutter: stable;
+}
+.contact-dialog {
+  padding: 0;
+}
+.contact-dialog .dialog-scroll {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 30px 22px;
+  scrollbar-gutter: stable;
+}
+.product-dialog > .dialog-close,
+.contact-dialog > .dialog-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 125;
+}
+@media (min-width: 640px) {
+  .product-dialog .dialog-scroll {
+    grid-template-columns: 1fr 1fr;
+    max-height: min(720px, calc(100dvh - 36px));
+  }
+  .product-dialog,
+  .contact-dialog {
+    max-height: calc(100dvh - 36px);
+  }
+}
+@media (max-width: 639px) {
+  .dialog-backdrop {
+    padding: 8px;
+  }
+  .product-dialog,
+  .contact-dialog {
+    max-height: calc(100dvh - 16px);
+  }
+  .product-dialog .dialog-scroll,
+  .contact-dialog .dialog-scroll {
+    max-height: calc(100dvh - 16px);
+  }
+  .product-dialog > .dialog-close,
+  .contact-dialog > .dialog-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+/* Desktop controls and contact presentation */
+@media (min-width: 900px) {
+  .catalog-tools {
+    display: block;
+    margin-top: 0;
+  }
+  .category-list {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+  }
+  .category {
+    width: calc(20% - 7px);
+    flex: 1 1 calc(20% - 7px);
+    padding-right: 16px;
+  }
+  .category b {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .category small {
+    margin-left: auto;
+  }
+  .sort {
+    margin: 0 0 16px;
+    justify-content: flex-end;
+  }
+  .site-header__bag {
+    min-width: 108px;
+    height: 42px;
+    padding: 0 16px;
+    gap: 9px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+    transition:
+      background 0.2s,
+      transform 0.2s;
+  }
+  .site-header__bag:hover {
+    background: var(--brand-deep);
+    transform: translateY(-1px);
+  }
+  .site-header__bag b {
+    right: -5px;
+    top: -6px;
+    border: 2px solid var(--canvas);
+  }
+  .product-card__buy {
+    min-width: 88px;
+    height: 40px;
+    padding: 0 15px;
+    gap: 7px;
+    border-radius: 999px;
+    font-size: 12px;
+    transition:
+      background 0.2s,
+      transform 0.2s;
+  }
+  .product-card__buy:hover {
+    background: var(--brand-deep);
+    transform: translateY(-1px);
+  }
+  .product-card__buy span {
+    display: inline;
+  }
+  .contact-dialog {
+    width: min(640px, calc(100vw - 40px));
+    border-radius: 28px;
+    box-shadow: 0 35px 90px #0005;
+  }
+  .contact-dialog .dialog-scroll {
+    padding: 48px 46px 42px;
+  }
+  .contact-dialog > .dialog-close {
+    top: 18px;
+    right: 18px;
+    width: 44px;
+    height: 44px;
+  }
+  .contact-dialog > .dialog-close:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+  .contact-dialog > .dialog-scroll > h2 {
+    max-width: 440px;
+    margin-top: 10px;
+    font-size: 40px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+  .contact-links {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 26px;
+  }
+  .contact-links a {
+    min-height: 50px;
+    padding: 13px 15px;
+  }
+  .contact-dialog form {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 14px;
+    padding-top: 24px;
+  }
+  .contact-dialog form label:nth-child(3),
+  .contact-dialog form .button {
+    grid-column: 1/-1;
+  }
+  .contact-dialog textarea {
+    min-height: 112px;
+  }
+  .contact-dialog form .button {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 2px;
+  }
+}

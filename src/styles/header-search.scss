@@ -1,0 +1,93 @@
+﻿/* Search overlays the page so typing never changes the document position. */
+.site-header {
+  position: sticky;
+}
+.site-header__search {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, var(--shell));
+  padding: 12px var(--gutter) 16px;
+  background: color-mix(in srgb, var(--canvas) 97%, transparent);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 12px 30px #24122812;
+  backdrop-filter: blur(16px);
+}
+.site-header__search input {
+  margin-left: -42px;
+}
+
+/* Equal contact insets; the scrollbar no longer reserves one-sided space. */
+.contact-dialog .dialog-scroll {
+  scrollbar-gutter: auto;
+  padding-left: 28px;
+  padding-right: 28px;
+}
+@media (min-width: 900px) {
+  .contact-dialog .dialog-scroll {
+    padding: 48px 40px 38px;
+  }
+  .contact-dialog .eyebrow,
+  .contact-dialog .dialog-scroll > h2 {
+    padding-right: 52px;
+  }
+}
+@media (max-width: 639px) {
+  .contact-dialog .dialog-scroll {
+    padding: 54px 22px 26px;
+  }
+  .contact-dialog .eyebrow,
+  .contact-dialog .dialog-scroll > h2 {
+    padding-right: 44px;
+  }
+}
+@media (min-width: 900px) and (max-width: 1050px) {
+  .category b {
+    font-size: 11px;
+  }
+  .category {
+    padding-right: 10px;
+    gap: 7px;
+  }
+  .category > span {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.result-count {
+  margin-right: auto;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sort {
+  align-items: center;
+  gap: 14px;
+}
+.subcategory-list {
+  display: flex;
+  gap: 6px;
+  margin: -2px 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subcategory-list::-webkit-scrollbar {
+  display: none;
+}
+.subcategory-list button {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.subcategory-list button.active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 9%, var(--surface));
+  color: var(--brand-deep);
+}

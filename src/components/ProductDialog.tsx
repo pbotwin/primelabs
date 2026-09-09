@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, Check, Heart, ShieldCheck, X } from "lucide-react";
 import type { CopyKey } from "../data/translations";
 import { uiCopy } from "../data/uiCopy";
+import { STORE } from "../config/store";
+import { useModalDialog } from "../hooks/useModalDialog";
 import type { Language, Product, ProductVariant } from "../types";
 interface Props {
   language: Language;
@@ -25,23 +27,19 @@ export function ProductDialog({
   onRelated,
   t,
 }: Props) {
-  const [variantId, setVariantId] = useState("");
-  useEffect(() => {
-    if (!product) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.body.classList.add("modal-open");
-    addEventListener("keydown", close);
-    return () => {
-      document.body.classList.remove("modal-open");
-      removeEventListener("keydown", close);
-    };
-  }, [product, onClose]);
+  const [variantSelection, setVariantSelection] = useState({
+    productId: "",
+    variantId: "",
+  });
+  const dialogRef = useModalDialog(Boolean(product), onClose);
   if (!product) return null;
   const u = uiCopy[language];
   const selectedVariant =
-    product.variants.find((variant) => variant.id === variantId) ??
+    product.variants.find(
+      (variant) =>
+        variantSelection.productId === product.id &&
+        variant.id === variantSelection.variantId,
+    ) ??
     product.variants.find((variant) => variant.inStock) ??
     product.variants[0];
   const displayPrice = selectedVariant?.price ?? product.price;
@@ -57,19 +55,27 @@ export function ProductDialog({
       }}
     >
       <section
+        ref={dialogRef}
         className="product-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="product-dialog-title"
+        tabIndex={-1}
       >
         <button className="dialog-close" onClick={onClose} aria-label={u.close}>
           <X />
         </button>
         <div className="dialog-scroll">
           <div className="dialog-media">
-            <img src={displayImage} alt={`${product.brand} ${product.name}`} />
+            <img
+              src={displayImage}
+              alt={`${product.brand} ${product.name}`}
+              onError={(event) => {
+                event.currentTarget.src = STORE.fallbackImage;
+              }}
+            />
             {product.badge && (
-              <span className={`badge ${product.badge}`}>
+              <span className={`badge badge--${product.badge}`}>
                 {t(product.badge)}
               </span>
             )}
@@ -107,7 +113,12 @@ export function ProductDialog({
                           selectedVariant?.id === variant.id ? "active" : ""
                         }
                         disabled={!variant.inStock}
-                        onClick={() => setVariantId(variant.id)}
+                        onClick={() =>
+                          setVariantSelection({
+                            productId: product.id,
+                            variantId: variant.id,
+                          })
+                        }
                         aria-pressed={selectedVariant?.id === variant.id}
                       >
                         <span>{variant.name}</span>

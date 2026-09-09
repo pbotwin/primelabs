@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import {
   CheckCircle2,
   Minus,
@@ -7,7 +7,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { STORE } from "../config/store";
 import { uiCopy } from "../data/uiCopy";
+import { useModalDialog } from "../hooks/useModalDialog";
 import type { Language, Product, ProductVariant } from "../types";
 interface Props {
   language: Language;
@@ -31,18 +33,7 @@ export function CartDrawer({
   onComplete,
 }: Props) {
   const [step, setStep] = useState<"bag" | "checkout" | "done">("bag");
-  useEffect(() => {
-    if (!open) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.body.classList.add("modal-open");
-    addEventListener("keydown", handleKey);
-    return () => {
-      document.body.classList.remove("modal-open");
-      removeEventListener("keydown", handleKey);
-    };
-  }, [open, onClose]);
+  const dialogRef = useModalDialog(open, onClose);
   if (!open) return null;
   const u = uiCopy[language];
   const total = items.reduce(
@@ -66,7 +57,7 @@ export function CartDrawer({
       `Address: ${data.get("address")}, ${data.get("city")}`,
     ].join("\n");
     window.open(
-      `https://wa.me/995551022087?text=${encodeURIComponent(message)}`,
+      `https://wa.me/${STORE.whatsappNumber}?text=${encodeURIComponent(message)}`,
       "_blank",
       "noopener,noreferrer",
     );
@@ -75,7 +66,7 @@ export function CartDrawer({
   };
   const close = () => {
     onClose();
-    setTimeout(() => setStep("bag"), 250);
+    setStep("bag");
   };
   return (
     <div
@@ -85,10 +76,12 @@ export function CartDrawer({
       }}
     >
       <aside
+        ref={dialogRef}
         className="cart-drawer"
         role="dialog"
         aria-modal="true"
         aria-labelledby="cart-title"
+        tabIndex={-1}
       >
         <header>
           <div>
@@ -197,6 +190,9 @@ export function CartDrawer({
                   <img
                     src={variant?.image ?? product.image}
                     alt={product.name}
+                    onError={(event) => {
+                      event.currentTarget.src = STORE.fallbackImage;
+                    }}
                   />
                   <div>
                     <small>{product.brand}</small>
@@ -227,17 +223,19 @@ export function CartDrawer({
             <footer>
               <div className="delivery-progress">
                 <span>
-                  {total >= 150
+                  {total >= STORE.freeDeliveryThreshold
                     ? language === "ka"
                       ? "უფასო მიწოდება გააქტიურებულია"
                       : "Free delivery unlocked"
                     : language === "ka"
-                      ? `დაამატე ₾${(150 - total).toFixed(0)} უფასო მიწოდებისთვის`
-                      : `Add ₾${(150 - total).toFixed(0)} for free delivery`}
+                      ? `დაამატე ₾${(STORE.freeDeliveryThreshold - total).toFixed(0)} უფასო მიწოდებისთვის`
+                      : `Add ₾${(STORE.freeDeliveryThreshold - total).toFixed(0)} for free delivery`}
                 </span>
                 <i>
                   <b
-                    style={{ width: `${Math.min(100, (total / 150) * 100)}%` }}
+                    style={{
+                      width: `${Math.min(100, (total / STORE.freeDeliveryThreshold) * 100)}%`,
+                    }}
                   />
                 </i>
               </div>

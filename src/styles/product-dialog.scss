@@ -1,0 +1,101 @@
+﻿/* Product media stays fixed on desktop; only the right details pane scrolls. */
+.product-dialog {
+  overflow: hidden;
+}
+.product-dialog .dialog-scroll {
+  max-height: calc(100dvh - 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.product-dialog > .dialog-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 140;
+  margin: 0;
+  box-shadow: 0 5px 16px rgba(31, 16, 35, 0.14);
+}
+.contact-dialog {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.contact-dialog .dialog-scroll {
+  max-height: none;
+  overflow: visible;
+}
+.contact-dialog > .dialog-close {
+  position: sticky;
+  top: 10px;
+  right: auto;
+  z-index: 140;
+  margin: 10px 10px -54px auto;
+  box-shadow: 0 5px 16px rgba(31, 16, 35, 0.14);
+}
+@media (min-width: 640px) {
+  .product-dialog .dialog-scroll {
+    height: min(720px, calc(100dvh - 36px));
+    max-height: calc(100dvh - 36px);
+    overflow: hidden;
+  }
+  .product-dialog .dialog-media {
+    min-height: 0;
+    height: 100%;
+  }
+  .product-dialog .dialog-copy {
+    height: 100%;
+    min-height: 0;
+    padding: 30px 0 0 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .product-dialog .dialog-copy > .brand,
+  .product-dialog .dialog-copy > h2,
+  .product-dialog .dialog-copy > .dialog-subtitle,
+  .product-dialog .dialog-copy > .dialog-price,
+  .product-dialog .dialog-copy > .stock {
+    padding-right: 52px;
+    flex: none;
+  }
+  .product-dialog .dialog-copy > h2 {
+    max-width: 390px;
+    font-size: clamp(27px, 3vw, 36px);
+    line-height: 1.08;
+  }
+  .product-dialog .dialog-detail-scroll {
+    min-height: 0;
+    margin-top: 18px;
+    padding: 0 30px 30px 0;
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: auto;
+  }
+  .product-dialog .dialog-detail-scroll > .dialog-description {
+    margin-top: 0;
+  }
+  .product-dialog .dialog-purchase {
+    flex: none;
+    padding: 12px 30px 18px 0;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .product-dialog .dialog-purchase .dialog-actions {
+    margin-top: 0;
+  }
+  .product-dialog .dialog-purchase .secure-note {
+    margin-top: 9px;
+  }
+  .product-dialog > .dialog-close {
+    top: 12px;
+    right: 12px;
+  }
+  .contact-dialog > .dialog-close {
+    top: 12px;
+    margin-top: 12px;
+    margin-right: 12px;
+  }
+}

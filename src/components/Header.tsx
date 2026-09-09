@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import {
   ChevronRight,
   Heart,
@@ -18,7 +18,7 @@ interface Props {
   onLanguage: () => void;
   t: (key: CopyKey) => string;
   savedCount: number;
-  savedOnly: boolean;
+  savedOpen: boolean;
   onSaved: () => void;
   cartCount: number;
   onCart: () => void;
@@ -35,7 +35,7 @@ export function Header({
   onLanguage,
   t,
   savedCount,
-  savedOnly,
+  savedOpen,
   onSaved,
   cartCount,
   onCart,
@@ -92,11 +92,13 @@ export function Header({
       <div className="announcement">
         ✦ {t("announcement")} <a href="#categories">{t("shop")} →</a>
       </div>
-      <header className={stuck ? "header stuck" : "header"}>
-        <div className="shell header-row">
+      <header
+        className={stuck ? "site-header site-header--stuck" : "site-header"}
+      >
+        <div className="shell site-header__row">
           <IconButton
             label={t("menu")}
-            className="menu-button menu-button-left"
+            className="site-header__menu-toggle"
             onClick={() => {
               setMenuOpen((open) => !open);
               setSearchOpen(false);
@@ -107,24 +109,24 @@ export function Header({
           </IconButton>
           <a
             href="#top"
-            className="logo"
+            className="site-header__logo"
             aria-label="PrimeLabs"
             onClick={goHome}
           >
             <img src="./logo-ink.svg" alt="PrimeLabs" />
           </a>
-          <nav className="desktop-nav" aria-label="Main navigation">
+          <nav className="site-header__nav" aria-label="Main navigation">
             <a href="#categories">{t("products")}</a>
             <button onClick={onNewsletter}>
               {language === "ka" ? "სიახლეები" : "Newsletter"}
             </button>
             <button onClick={onContact}>{t("contact")}</button>
           </nav>
-          <div className="header-actions">
-            <button className="language" onClick={onLanguage}>
+          <div className="site-header__actions">
+            <button className="site-header__language" onClick={onLanguage}>
               {t("language")}
             </button>
-            <span ref={searchToggleRef} className="search-toggle-wrap">
+            <span ref={searchToggleRef} className="site-header__search-toggle">
               <IconButton
                 label={t("searchLabel")}
                 onClick={() => {
@@ -139,13 +141,13 @@ export function Header({
             <IconButton
               label={t("saved")}
               count={savedCount}
-              className={savedOnly ? "selected" : ""}
+              className={savedOpen ? "icon-button--selected" : ""}
               onClick={onSaved}
-              aria-pressed={savedOnly}
+              aria-pressed={savedOpen}
             >
-              <Heart fill={savedOnly ? "currentColor" : "none"} />
+              <Heart fill={savedOpen ? "currentColor" : "none"} />
             </IconButton>
-            <button className="bag" onClick={onCart}>
+            <button className="site-header__bag" onClick={onCart}>
               <ShoppingBag />
               <span>{t("cart")}</span>
               {cartCount > 0 && <b>{cartCount}</b>}
@@ -153,7 +155,7 @@ export function Header({
           </div>
         </div>
         {searchOpen && (
-          <div ref={searchPanelRef} className="shell search-panel">
+          <div ref={searchPanelRef} className="shell site-header__search">
             <Search />
             <input
               autoFocus
@@ -169,7 +171,7 @@ export function Header({
               </button>
             )}
             {query && (
-              <div className="search-results" role="listbox">
+              <div className="site-header__search-results" role="listbox">
                 {searchResults.length ? (
                   searchResults.map((product) => (
                     <button
@@ -196,7 +198,10 @@ export function Header({
           </div>
         )}
         {menuOpen && (
-          <nav className="shell mobile-menu-panel" aria-label={t("menu")}>
+          <nav
+            className="shell site-header__mobile-menu"
+            aria-label={t("menu")}
+          >
             <button
               type="button"
               onClick={() => {

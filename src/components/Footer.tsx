@@ -1,4 +1,5 @@
 import { ArrowRight, ArrowUp, Mail } from "lucide-react";
+import { STORE } from "../config/store";
 import type { CopyKey } from "../data/translations";
 
 type FooterProps = {
@@ -25,13 +26,13 @@ export function Footer({ t, onContact, onNewsletter }: FooterProps) {
           <a href="#support">{t("footerSupport")}</a>
           <a
             className="footer-address"
-            href="https://yandex.com.ge/maps/org/primelabs/220205956204/"
+            href={STORE.mapUrl}
             target="_blank"
             rel="noreferrer"
           >
             {t("storeAddress")}
           </a>
-          <a href="tel:+995551022087">+995 551 02 20 87</a>
+          <a href={STORE.phoneHref}>{STORE.phoneDisplay}</a>
         </nav>
         <section
           className="footer-newsletter"

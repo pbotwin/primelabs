@@ -1,6 +1,6 @@
-# PrimeLabs storefront
+﻿# PrimeLabs storefront
 
-A responsive React + TypeScript storefront for PrimeLabs. The UI supports Georgian and English, category filters, search, price sorting, saved products, external product/cart links, and responsive layouts from small phones through large desktops.
+A responsive React + TypeScript storefront for PrimeLabs. It supports Georgian and English, category and brand filters, language-independent search, price filtering and sorting, saved products, in-app product details, a persistent cart, and WhatsApp checkout.
 
 ## Development
 
@@ -16,45 +16,39 @@ Vite serves the app at `http://localhost:4187` when that port is available.
 - `npm run dev` — local development server with hot reload
 - `npm run build` — TypeScript validation and production build
 - `npm run lint` — ESLint validation
-- `npm run check` — lint and build together
+- `npm run format` — format source and configuration files
+- `npm run check` — formatting, lint, TypeScript, and production build
 - `npm run preview` — preview the production build
-- `node reference/react-verify.mjs` — browser checks while the development server is running on port 4188
 
 ## Structure
 
 ```text
 src/
-├── components/       Reusable UI components
+├── components/       UI components and dialogs
+├── config/           Store-wide operational constants
 ├── data/             Product catalog and translations
-├── hooks/            Shared React hooks
-├── App.tsx           Page composition and catalog state
-├── styles.css        Design tokens and responsive styles
+├── hooks/            Shared persistence and dialog hooks
+├── utils/            Typed catalog filtering logic
+├── App.tsx           Page composition and storefront state
+├── styles/           Ordered SCSS with BEM component selectors
 └── types.ts          Shared domain types
 ```
 
-Product links lead to the live PrimeLabs store. Several product images also load from the live store because local copies were not included in the source assets. Update `src/data/products.ts` to connect a different catalog source or local image set.
-
-The active application entry point is `src/main.tsx`. Legacy static HTML, JavaScript, CSS, server, catalog, and verification sources have been removed.
+Products open inside the application. Cart checkout prepares an order in WhatsApp, contact prepares a WhatsApp message, and newsletter signup prepares an email request because the static GitHub Pages deployment has no backend.
 
 ## Verification
 
-The browser script checks rendering and horizontal overflow at 390, 768, and 1440 pixels, plus category filtering, search, reset, and saved products. Screenshots from the most recent run are stored in `reference/react-390.png`, `reference/react-768.png`, and `reference/react-1440.png`.
+`npm run check` is required before deployment. Manual release checks should cover 360, 390, 768, and 1440-pixel viewports, catalog filtering, search, pagination, product variants, saved products, all dialogs, and cart checkout.
+
+The engineering audit and prioritized technical debt are documented in [`docs/CODEBASE_AUDIT.md`](docs/CODEBASE_AUDIT.md).
 
 ## Deploy to GitHub Pages
 
-The project is already configured for GitHub Pages, including repository subpath asset URLs and the workflow in `.github/workflows/deploy.yml`.
+The repository includes `.github/workflows/deploy.yml` and is configured for repository-subpath assets.
 
-1. Create an empty GitHub repository.
-2. Push this project to its `main` branch.
-3. Open the repository's **Settings → Pages**.
-4. Under **Build and deployment**, select **GitHub Actions** as the source.
-5. Open the repository's **Actions** tab and wait for “Deploy to GitHub Pages” to finish.
+1. Open **Settings → Pages** in the GitHub repository.
+2. Select **GitHub Actions** under **Build and deployment**.
+3. Push to `main`.
+4. Wait for the **Deploy to GitHub Pages** workflow to finish.
 
-The site will be available at `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`. Every push to `main` automatically rebuilds and deploys it.
-
-You can inspect the production output locally with:
-
-```bash
-npm run build
-npm run preview
-```
+The site is published at `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`.

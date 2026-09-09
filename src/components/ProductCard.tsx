@@ -1,4 +1,5 @@
 import { Check, Heart, Plus } from "lucide-react";
+import { STORE } from "../config/store";
 import type { CopyKey } from "../data/translations";
 import type { Product } from "../types";
 interface Props {
@@ -24,27 +25,34 @@ export function ProductCard({
     : 0;
   return (
     <article className="product-card">
-      <div className="product-media">
-        <button
-          className="product-open-media"
-          onClick={onOpen}
-          aria-label={product.name}
-        >
-          <img
-            src={product.image}
-            onError={(event) => {
-              event.currentTarget.src = "./vitamins.webp";
-            }}
-            alt={`${product.brand} ${product.name}`}
-            loading="lazy"
-          />
-        </button>
+      <button
+        className="product-card__open"
+        onClick={onOpen}
+        aria-label={product.name}
+      />
+      <div className="product-card__media">
+        <img
+          src={product.image}
+          onError={(event) => {
+            event.currentTarget.src = STORE.fallbackImage;
+          }}
+          alt={`${product.brand} ${product.name}`}
+          loading="lazy"
+        />
         {product.badge && (
-          <span className={`badge ${product.badge}`}>{t(product.badge)}</span>
+          <span className={`badge badge--${product.badge}`}>
+            {t(product.badge)}
+          </span>
         )}
-        {discount > 0 && <span className="discount">−{discount}%</span>}
+        {discount > 0 && (
+          <span className="product-card__discount">−{discount}%</span>
+        )}
         <button
-          className={saved ? "save active" : "save"}
+          className={
+            saved
+              ? "product-card__save product-card__save--active"
+              : "product-card__save"
+          }
           onClick={onSave}
           aria-label={`${t("saved")}: ${product.name}`}
           aria-pressed={saved}
@@ -52,18 +60,20 @@ export function ProductCard({
           <Heart fill={saved ? "currentColor" : "none"} />
         </button>
       </div>
-      <div className="product-copy">
-        <p className="brand">{product.brand}</p>
-        <h3>
-          <button className="product-title" onClick={onOpen}>
-            {product.name}
-          </button>
-        </h3>
-        <p className="subtitle">
+      <div className="product-card__content">
+        <p className="product-card__brand">{product.brand}</p>
+        <h3>{product.name}</h3>
+        <p className="product-card__subtitle">
           {product.variants.length ? t(product.category) : product.subtitle}
         </p>
-        <div className="card-meta">
-          <span className={product.inStock ? "available" : "unavailable"}>
+        <div className="product-card__meta">
+          <span
+            className={
+              product.inStock
+                ? "product-card__availability"
+                : "product-card__availability product-card__availability--unavailable"
+            }
+          >
             <i /> {product.inStock ? t("inStockShort") : t("outOfStock")}
           </span>
           {product.variants.length > 0 && (
@@ -72,8 +82,8 @@ export function ProductCard({
             </span>
           )}
         </div>
-        <div className="product-bottom">
-          <div className="price">
+        <div className="product-card__footer">
+          <div className="product-card__price">
             {product.from && <small>{t("from")}</small>}
             <strong>₾{product.price.toFixed(2)}</strong>
             {product.previousPrice && (
@@ -81,7 +91,11 @@ export function ProductCard({
             )}
           </div>
           <button
-            className={added ? "buy added" : "buy"}
+            className={
+              added
+                ? "product-card__buy product-card__buy--added"
+                : "product-card__buy"
+            }
             onClick={onAdd}
             aria-label={`${t("buy")}: ${product.name}`}
           >

@@ -18,7 +18,7 @@ export function IconButton({
       {...props}
     >
       {children}
-      {count ? <span className="counter">{count}</span> : null}
+      {count ? <span className="icon-button__count">{count}</span> : null}
     </button>
   );
 }
