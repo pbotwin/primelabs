@@ -210,13 +210,21 @@ body {
   }
 
   .featured__slide h1 {
-    font-size: clamp(20px, 5.8vw, 25px);
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: clamp(15px, 4.5vw, 18px);
     line-height: 1.08;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
   }
 
   .featured__slide p,
   .featured__action {
-    font-size: 10px;
+    font-size: 9px;
+  }
+
+  .featured__label {
+    font-size: 7px;
   }
 
   .featured__supporting h2 {

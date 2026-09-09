@@ -466,47 +466,16 @@ export function App() {
                     </label>
                   </div>
                 </div>
-                <label className="catalog-filter__search">
-                  <span>{t("search")}</span>
-                  <span className="catalog-filter__search-field">
-                    <Search aria-hidden="true" />
-                    <input
-                      type="text"
-                      inputMode="search"
-                      value={catalogQuery}
-                      onChange={(event) => {
-                        setPage(1);
-                        setCatalogQuery(event.target.value);
-                      }}
-                      placeholder={t("search")}
-                    />
-                    {catalogQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setCatalogQuery("")}
-                        aria-label={t("close")}
-                      >
-                        <X />
-                      </button>
-                    )}
-                  </span>
-                </label>
                 <div className="catalog-filter__actions">
                   <button
                     type="button"
-                    className="mobile-filter-toggle"
+                    className="mobile-filter-toggle mobile-filter-toggle--compact"
                     onClick={() => setMobileFiltersOpen((open) => !open)}
                     aria-expanded={mobileFiltersOpen}
                     aria-controls="mobile-catalog-filters"
                   >
                     <SlidersHorizontal />
-                    {mobileFiltersOpen
-                      ? language === "ka"
-                        ? "ფილტრების დახურვა"
-                        : "Close filters"
-                      : language === "ka"
-                        ? "მეტი ფილტრი"
-                        : "More filters"}
+                    {language === "ka" ? "მეტი ფილტრი" : "More filters"}
                     {mobileFilterCount > 0 && <b>{mobileFilterCount}</b>}
                     <ChevronDown />
                   </button>
@@ -523,6 +492,50 @@ export function App() {
                       setSort(value);
                     }}
                   />
+                </div>
+                <div className="catalog-filter__mobile-panel">
+                  <div className="catalog-filter__mobile-panel-inner">
+                    <label className="catalog-filter__search">
+                      <span>{t("search")}</span>
+                      <span className="catalog-filter__search-field">
+                        <Search aria-hidden="true" />
+                        <input
+                          type="text"
+                          inputMode="search"
+                          value={catalogQuery}
+                          onChange={(event) => {
+                            setPage(1);
+                            setCatalogQuery(event.target.value);
+                          }}
+                          placeholder={t("search")}
+                        />
+                        {catalogQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setCatalogQuery("")}
+                            aria-label={t("close")}
+                          >
+                            <X />
+                          </button>
+                        )}
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      className="mobile-filter-toggle mobile-filter-toggle--expanded"
+                      onClick={() => setMobileFiltersOpen(false)}
+                      aria-expanded={mobileFiltersOpen}
+                      aria-controls="mobile-catalog-filters"
+                      tabIndex={mobileFiltersOpen ? 0 : -1}
+                    >
+                      <SlidersHorizontal />
+                      {language === "ka"
+                        ? "ფილტრების დახურვა"
+                        : "Close filters"}
+                      {mobileFilterCount > 0 && <b>{mobileFilterCount}</b>}
+                      <ChevronDown />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

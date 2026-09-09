@@ -652,6 +652,10 @@ img {
 .catalog-filter__actions {
   display: contents;
 }
+.catalog-filter__mobile-panel,
+.catalog-filter__mobile-panel-inner {
+  display: contents;
+}
 .catalog-filter__actions > .custom-select {
   width: 100%;
   max-width: 200px;
