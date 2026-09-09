@@ -6,6 +6,7 @@ import "./styles/base.scss";
 import "./styles/storefront-components.scss";
 import "./styles/dialogs.scss";
 import "./styles/header-search.scss";
+import "./styles/custom-select.scss";
 import "./styles/catalog-responsive.scss";
 import "./styles/product-dialog.scss";
 import "./styles/motion.scss";

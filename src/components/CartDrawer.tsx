@@ -11,6 +11,7 @@ import { STORE } from "../config/store";
 import { uiCopy } from "../data/uiCopy";
 import { useModalDialog } from "../hooks/useModalDialog";
 import type { Language, Product, ProductVariant } from "../types";
+import { CustomSelect } from "./CustomSelect";
 interface Props {
   language: Language;
   open: boolean;
@@ -33,6 +34,8 @@ export function CartDrawer({
   onComplete,
 }: Props) {
   const [step, setStep] = useState<"bag" | "checkout" | "done">("bag");
+  const [city, setCity] = useState("");
+  const [cityError, setCityError] = useState(false);
   const dialogRef = useModalDialog(open, onClose);
   if (!open) return null;
   const u = uiCopy[language];
@@ -43,6 +46,10 @@ export function CartDrawer({
   );
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!city) {
+      setCityError(true);
+      return;
+    }
     const data = new FormData(event.currentTarget);
     const lines = items.map(
       ({ product, variant, quantity }) =>
@@ -67,6 +74,8 @@ export function CartDrawer({
   const close = () => {
     onClose();
     setStep("bag");
+    setCity("");
+    setCityError(false);
   };
   return (
     <div
@@ -139,18 +148,24 @@ export function CartDrawer({
                 placeholder={u.addressPlaceholder}
               />
             </label>
-            <label>
-              {u.city}
-              <select name="city" required defaultValue="">
-                <option value="" disabled>
-                  {u.selectCity}
-                </option>
-                <option>Tbilisi</option>
-                <option>Batumi</option>
-                <option>Kutaisi</option>
-                <option>{u.other}</option>
-              </select>
-            </label>
+            <CustomSelect
+              label={u.city}
+              name="city"
+              required
+              value={city}
+              placeholder={u.selectCity}
+              error={cityError ? u.selectCity : undefined}
+              options={[
+                { value: "Tbilisi", label: "Tbilisi" },
+                { value: "Batumi", label: "Batumi" },
+                { value: "Kutaisi", label: "Kutaisi" },
+                { value: u.other, label: u.other },
+              ]}
+              onChange={(value) => {
+                setCity(value);
+                setCityError(false);
+              }}
+            />
             <fieldset>
               <legend>{u.payment}</legend>
               <label className="payment">

@@ -1,11 +1,13 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
+  ChevronDown,
   Cookie,
   Dumbbell,
   Flame,
   Grid2X2,
   Search,
+  SlidersHorizontal,
   Waves,
   X,
   Zap,
@@ -18,6 +20,7 @@ import { ProductCard } from "./components/ProductCard";
 import { ProductDialog } from "./components/ProductDialog";
 import { CartDrawer } from "./components/CartDrawer";
 import { ContactDialog } from "./components/ContactDialog";
+import { CustomSelect } from "./components/CustomSelect";
 import { NewsletterDialog } from "./components/NewsletterDialog";
 import { SavedProductsDialog } from "./components/SavedProductsDialog";
 import { RecentlyViewed } from "./components/RecentlyViewed";
@@ -124,6 +127,7 @@ export function App() {
   const [maxPrice, setMaxPrice] = useState("");
   const [catalogQuery, setCatalogQuery] = useState("");
   const [headerQuery, setHeaderQuery] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sort, setSort] = useState<CatalogSort>("featured");
   const [savedOpen, setSavedOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
@@ -183,6 +187,10 @@ export function App() {
         : [],
     [headerQuery],
   );
+  const mobileFilterCount = [
+    minPrice !== "" || maxPrice !== "",
+    catalogQuery !== "",
+  ].filter(Boolean).length;
   const filter = (id: Category) => {
     setPage(1);
     setCategory(id);
@@ -199,6 +207,7 @@ export function App() {
     setMaxPrice("");
     setCatalogQuery("");
     setHeaderQuery("");
+    setMobileFiltersOpen(false);
     setSavedOpen(false);
   };
   const toggleSave = (id: string) =>
@@ -346,143 +355,176 @@ export function App() {
                 </button>
               ))}
             </div>
-            {subcategories[category]?.length ? (
-              <div className="subcategory-list" aria-label={t("subcategories")}>
-                <button
-                  className={subcategory === "all" ? "active" : ""}
-                  onClick={() => {
-                    setPage(1);
-                    setSubcategory("all");
-                  }}
+            <div
+              id="mobile-catalog-filters"
+              className={
+                mobileFiltersOpen
+                  ? "catalog-tools__secondary catalog-tools__secondary--open"
+                  : "catalog-tools__secondary"
+              }
+            >
+              {subcategories[category]?.length ? (
+                <div
+                  className="subcategory-list"
+                  aria-label={t("subcategories")}
                 >
-                  {t("all")}
-                </button>
-                {subcategories[category]?.map((item) => (
                   <button
-                    key={item.id}
-                    className={subcategory === item.id ? "active" : ""}
+                    className={subcategory === "all" ? "active" : ""}
                     onClick={() => {
                       setPage(1);
-                      setSubcategory(item.id);
+                      setSubcategory("all");
                     }}
                   >
-                    {item.label[language]}
+                    {t("all")}
                   </button>
-                ))}
-              </div>
-            ) : null}
-            <div className="catalog-filter__brand" aria-label={t("brands")}>
-              <span className="catalog-filter__brand-label">{t("brands")}</span>
-              <div className="catalog-filter__brand-list">
-                <button
-                  className={
-                    brand === "all"
-                      ? "catalog-filter__brand-option catalog-filter__brand-option--active"
-                      : "catalog-filter__brand-option"
-                  }
-                  onClick={() => {
-                    setPage(1);
-                    setBrand("all");
-                  }}
-                  aria-pressed={brand === "all"}
-                >
-                  {t("allBrands")}
-                </button>
-                {brands.map((item) => (
+                  {subcategories[category]?.map((item) => (
+                    <button
+                      key={item.id}
+                      className={subcategory === item.id ? "active" : ""}
+                      onClick={() => {
+                        setPage(1);
+                        setSubcategory(item.id);
+                      }}
+                    >
+                      {item.label[language]}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <div className="catalog-filter__brand" aria-label={t("brands")}>
+                <span className="catalog-filter__brand-label">
+                  {t("brands")}
+                </span>
+                <div className="catalog-filter__brand-list">
                   <button
-                    key={item}
                     className={
-                      brand === item
+                      brand === "all"
                         ? "catalog-filter__brand-option catalog-filter__brand-option--active"
                         : "catalog-filter__brand-option"
                     }
                     onClick={() => {
                       setPage(1);
-                      setBrand(item);
+                      setBrand("all");
                     }}
-                    aria-pressed={brand === item}
+                    aria-pressed={brand === "all"}
                   >
-                    {item}
+                    {t("allBrands")}
                   </button>
-                ))}
-              </div>
-            </div>
-            <div className="sort">
-              <div className="price-filter">
-                <span>{t("price")}</span>
-                <div className="price-fields">
-                  <label>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      placeholder="0"
-                      value={minPrice}
-                      onChange={(event) => {
+                  {brands.map((item) => (
+                    <button
+                      key={item}
+                      className={
+                        brand === item
+                          ? "catalog-filter__brand-option catalog-filter__brand-option--active"
+                          : "catalog-filter__brand-option"
+                      }
+                      onClick={() => {
                         setPage(1);
-                        setMinPrice(event.target.value);
+                        setBrand(item);
                       }}
-                      aria-label={`${t("price")} ${t("priceFrom")}`}
-                    />
-                    <b>₾</b>
-                  </label>
-                  <i>–</i>
-                  <label>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      placeholder="500"
-                      value={maxPrice}
-                      onChange={(event) => {
-                        setPage(1);
-                        setMaxPrice(event.target.value);
-                      }}
-                      aria-label={`${t("price")} ${t("priceTo")}`}
-                    />
-                    <b>₾</b>
-                  </label>
+                      aria-pressed={brand === item}
+                    >
+                      {item}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <label className="catalog-filter__search">
-                <span>{t("search")}</span>
-                <span className="catalog-filter__search-field">
-                  <Search aria-hidden="true" />
-                  <input
-                    type="text"
-                    inputMode="search"
-                    value={catalogQuery}
-                    onChange={(event) => {
+              <div className="sort">
+                <div className="price-filter">
+                  <span>{t("price")}</span>
+                  <div className="price-fields">
+                    <label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        placeholder="0"
+                        value={minPrice}
+                        onChange={(event) => {
+                          setPage(1);
+                          setMinPrice(event.target.value);
+                        }}
+                        aria-label={`${t("price")} ${t("priceFrom")}`}
+                      />
+                      <b>₾</b>
+                    </label>
+                    <i>–</i>
+                    <label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        placeholder="500"
+                        value={maxPrice}
+                        onChange={(event) => {
+                          setPage(1);
+                          setMaxPrice(event.target.value);
+                        }}
+                        aria-label={`${t("price")} ${t("priceTo")}`}
+                      />
+                      <b>₾</b>
+                    </label>
+                  </div>
+                </div>
+                <label className="catalog-filter__search">
+                  <span>{t("search")}</span>
+                  <span className="catalog-filter__search-field">
+                    <Search aria-hidden="true" />
+                    <input
+                      type="text"
+                      inputMode="search"
+                      value={catalogQuery}
+                      onChange={(event) => {
+                        setPage(1);
+                        setCatalogQuery(event.target.value);
+                      }}
+                      placeholder={t("search")}
+                    />
+                    {catalogQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setCatalogQuery("")}
+                        aria-label={t("close")}
+                      >
+                        <X />
+                      </button>
+                    )}
+                  </span>
+                </label>
+                <div className="catalog-filter__actions">
+                  <button
+                    type="button"
+                    className="mobile-filter-toggle"
+                    onClick={() => setMobileFiltersOpen((open) => !open)}
+                    aria-expanded={mobileFiltersOpen}
+                    aria-controls="mobile-catalog-filters"
+                  >
+                    <SlidersHorizontal />
+                    {mobileFiltersOpen
+                      ? language === "ka"
+                        ? "ფილტრების დახურვა"
+                        : "Close filters"
+                      : language === "ka"
+                        ? "მეტი ფილტრი"
+                        : "More filters"}
+                    {mobileFilterCount > 0 && <b>{mobileFilterCount}</b>}
+                    <ChevronDown />
+                  </button>
+                  <CustomSelect<CatalogSort>
+                    label={t("sort")}
+                    value={sort}
+                    options={[
+                      { value: "featured", label: t("featured") },
+                      { value: "low", label: t("low") },
+                      { value: "high", label: t("high") },
+                    ]}
+                    onChange={(value) => {
                       setPage(1);
-                      setCatalogQuery(event.target.value);
+                      setSort(value);
                     }}
-                    placeholder={t("search")}
                   />
-                  {catalogQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setCatalogQuery("")}
-                      aria-label={t("close")}
-                    >
-                      <X />
-                    </button>
-                  )}
-                </span>
-              </label>
-              <label>
-                <span>{t("sort")}</span>
-                <select
-                  value={sort}
-                  onChange={(event) => {
-                    setPage(1);
-                    setSort(event.target.value as CatalogSort);
-                  }}
-                >
-                  <option value="featured">{t("featured")}</option>
-                  <option value="low">{t("low")}</option>
-                  <option value="high">{t("high")}</option>
-                </select>
-              </label>
+                </div>
+              </div>
             </div>
           </div>
           <div className="filter-summary catalog-summary">

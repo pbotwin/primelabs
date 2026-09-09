@@ -79,7 +79,7 @@ body {
 }
 
 .catalog-filter__brand-option,
-.sort select,
+.sort .custom-select__trigger,
 .price-filter input {
   font-size: 11px;
   font-weight: 650;
@@ -232,7 +232,7 @@ body {
   }
 
   .catalog-filter__brand-option,
-  .sort select,
+  .sort .custom-select__trigger,
   .price-filter input {
     font-size: 10px;
   }
