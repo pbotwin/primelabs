@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   ChevronDown,
@@ -16,6 +16,7 @@ import {
 import { FeaturedProducts } from "./components/FeaturedProducts";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { HorizontalScroller } from "./components/HorizontalScroller";
 import { ProductCard } from "./components/ProductCard";
 import { ProductDialog } from "./components/ProductDialog";
 import { CartDrawer } from "./components/CartDrawer";
@@ -319,7 +320,12 @@ export function App() {
           className={visible.length ? "shop shell" : "shop shop--empty shell"}
         >
           <div className="catalog-tools" id="categories">
-            <div className="category-list">
+            <HorizontalScroller
+              className="category-list"
+              label={t("categories")}
+              previousLabel="Previous categories"
+              nextLabel="More categories"
+            >
               {categories.map((item) => (
                 <button
                   key={item.id}
@@ -354,7 +360,7 @@ export function App() {
                   </small>
                 </button>
               ))}
-            </div>
+            </HorizontalScroller>
             <div
               id="mobile-catalog-filters"
               className={
@@ -364,9 +370,11 @@ export function App() {
               }
             >
               {subcategories[category]?.length ? (
-                <div
+                <HorizontalScroller
                   className="subcategory-list"
-                  aria-label={t("subcategories")}
+                  label={t("subcategories")}
+                  previousLabel="Previous subcategories"
+                  nextLabel="More subcategories"
                 >
                   <button
                     className={subcategory === "all" ? "active" : ""}
@@ -389,13 +397,18 @@ export function App() {
                       {item.label[language]}
                     </button>
                   ))}
-                </div>
+                </HorizontalScroller>
               ) : null}
               <div className="catalog-filter__brand" aria-label={t("brands")}>
                 <span className="catalog-filter__brand-label">
                   {t("brands")}
                 </span>
-                <div className="catalog-filter__brand-list">
+                <HorizontalScroller
+                  className="catalog-filter__brand-list"
+                  label={t("brands")}
+                  previousLabel="Previous brands"
+                  nextLabel="More brands"
+                >
                   <button
                     className={
                       brand === "all"
@@ -427,7 +440,7 @@ export function App() {
                       {item}
                     </button>
                   ))}
-                </div>
+                </HorizontalScroller>
               </div>
               <div className="sort">
                 <div className="price-filter">

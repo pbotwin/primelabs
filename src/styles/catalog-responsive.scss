@@ -46,6 +46,53 @@
     margin-bottom: 0;
     border-radius: 0;
     background: transparent;
+    scrollbar-width: none;
+  }
+  .category-list::-webkit-scrollbar {
+    display: none;
+  }
+  .horizontal-scroller {
+    position: relative;
+    width: calc(100vw - (var(--gutter) * 2) - 16px);
+    max-width: 100%;
+    min-width: 0;
+    display: block;
+  }
+  .horizontal-scroller__control {
+    position: absolute;
+    z-index: 4;
+    top: 9px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--brand) 48%, var(--line));
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--brand-deep);
+    box-shadow: 0 4px 12px rgba(43, 20, 47, 0.18);
+  }
+  .horizontal-scroller__control[hidden] {
+    display: none;
+  }
+  .horizontal-scroller__control svg {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.2;
+  }
+  .horizontal-scroller__control--previous {
+    left: 6px;
+  }
+  .horizontal-scroller__control--next {
+    right: 6px;
+  }
+  .horizontal-scroller:has(.subcategory-list) .horizontal-scroller__control,
+  .horizontal-scroller:has(.catalog-filter__brand-list)
+    .horizontal-scroller__control {
+    top: 3px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
   .catalog-filter__actions {
     display: contents;
@@ -239,8 +286,16 @@
     color: var(--brand-deep);
   }
   .subcategory-list {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
     gap: 5px;
     padding: 7px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .subcategory-list::-webkit-scrollbar {
+    display: none;
   }
   .subcategory-list button {
     min-height: 27px;
