@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -19,7 +19,7 @@ import { products } from "./data/products";
 import { copy, type CopyKey } from "./data/translations";
 import { productSearchText } from "./data/uiCopy";
 import { useLocalStorage } from "./hooks/useLocalStorage";
-import type { Category, Language } from "./types";
+import type { Category, Language, ProductVariant } from "./types";
 
 const categories: { id: Category; image?: string }[] = [
   { id: "all" },
@@ -41,47 +41,44 @@ type Subcategory = {
 };
 
 const subcategories: Partial<Record<Category, Subcategory[]>> = {
-  amino: [
+  preworkout: [
     {
-      id: "bcaa",
-      label: { ka: "BCAA", en: "BCAA" },
-      products: ["vplab", "nxt"],
-    },
-    { id: "eaa", label: { ka: "EAA", en: "EAA" }, products: ["bpi"] },
-  ],
-  protein: [
-    {
-      id: "whey",
-      label: { ka: "შრატის პროტეინი", en: "Whey protein" },
-      products: ["whey"],
+      id: "stimulant",
+      label: { ka: "სტიმულანტი", en: "Stimulant" },
+      products: products
+        .filter((product) => product.subcategories.includes("stimulant"))
+        .map((product) => product.id),
     },
     {
-      id: "bundle",
-      label: { ka: "ნაკრებები", en: "Bundles" },
-      products: ["bundle"],
+      id: "stim-free",
+      label: { ka: "სტიმულანტის გარეშე", en: "Stim-free" },
+      products: products
+        .filter((product) => product.subcategories.includes("stim-free"))
+        .map((product) => product.id),
     },
   ],
-  vitamins: [
+  fatburners: [
     {
-      id: "daily",
-      label: { ka: "ვიტამინები", en: "Daily vitamins" },
-      products: ["d3k2", "bcomplex", "biotin"],
+      id: "thermogenic",
+      label: { ka: "თერმოგენული", en: "Thermogenic" },
+      products: products
+        .filter((product) => product.subcategories.includes("thermogenic"))
+        .map((product) => product.id),
     },
     {
-      id: "minerals",
-      label: { ka: "მინერალები", en: "Minerals" },
-      products: ["zinc", "magcitrate", "magbis"],
+      id: "lipotropic",
+      label: { ka: "ლიპოტროპული", en: "Lipotropic" },
+      products: products
+        .filter((product) => product.subcategories.includes("lipotropic"))
+        .map((product) => product.id),
     },
-    {
-      id: "wellness",
-      label: { ka: "ჯანმრთელობა", en: "Wellness" },
-      products: ["berberine", "lionsmane", "ashwagandha"],
-    },
-    { id: "omega", label: { ka: "ომეგა", en: "Omega" }, products: ["omega3"] },
   ],
 };
 
 const brands = [...new Set(products.map((product) => product.brand))].sort();
+const featuredBundle = products.find((product) => product.id === "100")!;
+const featuredCreatine = products.find((product) => product.id === "101")!;
+const featuredBcaa = products.find((product) => product.id === "38")!;
 
 export function App() {
   const [language, setLanguage] = useLocalStorage<Language>(
@@ -107,6 +104,8 @@ export function App() {
   const [cartOpen, setCartOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [toast, setToast] = useState("");
+  const [recent, setRecent] = useLocalStorage<string[]>("primelabs-recent", []);
   const catalogRef = useRef<HTMLDivElement>(null);
   const [searchHeight, setSearchHeight] = useState(0);
   const t = (key: CopyKey) => copy[language][key];
@@ -117,7 +116,9 @@ export function App() {
     return products
       .filter(
         (p) =>
-          (term !== "" || category === "all" || p.category === category) &&
+          (term !== "" ||
+            category === "all" ||
+            p.categories.includes(category)) &&
           (term !== "" ||
             subcategory === "all" ||
             subcategories[category]
@@ -127,7 +128,7 @@ export function App() {
           p.price >= minimum &&
           p.price <= maximum &&
           (!savedOnly || saved.includes(p.id)) &&
-          `${p.brand} ${p.name} ${p.subtitle} ${productSearchText(p.id)}`
+          `${p.brand} ${p.name} ${p.subtitle} ${p.description.ka} ${p.description.en} ${p.variants.map((variant) => variant.name).join(" ")} ${productSearchText(p.id)}`
             .toLocaleLowerCase()
             .includes(term),
       )
@@ -182,14 +183,49 @@ export function App() {
       else next[id] = quantity;
       return next;
     });
-  const addToCart = (id: string) => {
-    updateCart(id, (cart[id] ?? 0) + 1);
+  const addToCart = (id: string, variant?: ProductVariant) => {
+    const key = variant ? `${id}::${variant.id}` : id;
+    setCart((items) => ({ ...items, [key]: (items[key] ?? 0) + 1 }));
     setSelectedProduct(null);
     setCartOpen(true);
   };
-  const cartItems = products
-    .filter((product) => cart[product.id])
-    .map((product) => ({ product, quantity: cart[product.id] }));
+  const quickAdd = (id: string) => {
+    setCart((items) => ({ ...items, [id]: (items[id] ?? 0) + 1 }));
+    const product = products.find((item) => item.id === id);
+    setToast(
+      language === "ka"
+        ? `${product?.name ?? "პროდუქტი"} დაემატა კალათაში`
+        : `${product?.name ?? "Product"} added to bag`,
+    );
+  };
+  const openProduct = (product: (typeof products)[number]) => {
+    setSelectedProduct(product);
+    setRecent((items) =>
+      [product.id, ...items.filter((id) => id !== product.id)].slice(0, 6),
+    );
+  };
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(""), 2600);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+  const cartItems = products.flatMap((product) =>
+    Object.entries(cart)
+      .filter(
+        ([key]) => key === product.id || key.startsWith(`${product.id}::`),
+      )
+      .map(([key, quantity]) => ({
+        key,
+        product,
+        quantity,
+        variant: product.variants.find(
+          (item) => item.id === key.split("::")[1],
+        ),
+      })),
+  );
+  const validSaved = saved.filter((id) =>
+    products.some((product) => product.id === id),
+  );
   return (
     <div id="top" lang={language}>
       <a className="skip" href="#product-grid-anchor">
@@ -199,12 +235,12 @@ export function App() {
         language={language}
         onLanguage={() => setLanguage(language === "ka" ? "en" : "ka")}
         t={t}
-        savedCount={saved.length}
+        savedCount={validSaved.length}
         savedOnly={savedOnly}
         onSaved={() => {
           setSavedOnly(true);
         }}
-        cartCount={Object.values(cart).reduce((sum, value) => sum + value, 0)}
+        cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onCart={() => setCartOpen(true)}
         onContact={() => setContactOpen(true)}
         onNewsletter={() => setNewsletterOpen(true)}
@@ -212,13 +248,13 @@ export function App() {
         query={query}
         onQuery={changeQuery}
         searchResults={query ? visible.slice(0, 6) : []}
-        onSearchProduct={setSelectedProduct}
+        onSearchProduct={openProduct}
       />
       <main>
         <section className="featured shell" aria-label="Featured products">
           <button
             className="featured-main"
-            onClick={() => setSelectedProduct(products[3])}
+            onClick={() => openProduct(featuredBundle)}
           >
             <div>
               <span className="deal-label">−13% {t("sale")}</span>
@@ -237,7 +273,7 @@ export function App() {
             <img src="./bundle.jpg" alt="Beef Protein and Creatine bundle" />
           </button>
           <div className="featured-side">
-            <button onClick={() => setSelectedProduct(products[0])}>
+            <button onClick={() => openProduct(featuredCreatine)}>
               <img src="./creatine.webp" alt="Creatine Monohydrate" />
               <div>
                 <span>{t("bestseller")}</span>
@@ -246,7 +282,7 @@ export function App() {
               </div>
               <ArrowRight />
             </button>
-            <button onClick={() => setSelectedProduct(products[4])}>
+            <button onClick={() => openProduct(featuredBcaa)}>
               <img src="./vplab.webp" alt="VPLAB BCAA" />
               <div>
                 <span>VPLAB</span>
@@ -282,7 +318,11 @@ export function App() {
                   <small>
                     {item.id === "all"
                       ? products.length
-                      : products.filter((p) => p.category === item.id).length}
+                      : products.filter((p) =>
+                          p.categories.includes(
+                            item.id as Exclude<Category, "all">,
+                          ),
+                        ).length}
                   </small>
                 </button>
               ))}
@@ -350,7 +390,7 @@ export function App() {
                       type="number"
                       inputMode="decimal"
                       min="0"
-                      placeholder="350"
+                      placeholder="500"
                       value={maxPrice}
                       onChange={(event) => setMaxPrice(event.target.value)}
                       aria-label={`${t("price")} ${t("priceTo")}`}
@@ -381,6 +421,50 @@ export function App() {
               sort !== "featured" ||
               savedOnly) && <button onClick={reset}>{t("reset")}</button>}
           </div>
+          {(category !== "all" ||
+            subcategory !== "all" ||
+            brand !== "all" ||
+            minPrice !== "" ||
+            maxPrice !== "" ||
+            savedOnly) && (
+            <div className="applied-filters" aria-label="Active filters">
+              {category !== "all" && (
+                <button onClick={() => filter("all")}>
+                  {t(category)} <X />
+                </button>
+              )}
+              {subcategory !== "all" && (
+                <button onClick={() => setSubcategory("all")}>
+                  {
+                    subcategories[category]?.find(
+                      (item) => item.id === subcategory,
+                    )?.label[language]
+                  }{" "}
+                  <X />
+                </button>
+              )}
+              {brand !== "all" && (
+                <button onClick={() => setBrand("all")}>
+                  {brand} <X />
+                </button>
+              )}
+              {(minPrice || maxPrice) && (
+                <button
+                  onClick={() => {
+                    setMinPrice("");
+                    setMaxPrice("");
+                  }}
+                >
+                  ₾{minPrice || 0}–{maxPrice || "∞"} <X />
+                </button>
+              )}
+              {savedOnly && (
+                <button onClick={() => setSavedOnly(false)}>
+                  {t("saved")} <X />
+                </button>
+              )}
+            </div>
+          )}
           <div
             id="product-grid-anchor"
             ref={catalogRef}
@@ -394,7 +478,12 @@ export function App() {
                     product={product}
                     saved={saved.includes(product.id)}
                     onSave={() => toggleSave(product.id)}
-                    onOpen={() => setSelectedProduct(product)}
+                    onOpen={() => openProduct(product)}
+                    onAdd={() =>
+                      product.variants.length || !product.inStock
+                        ? openProduct(product)
+                        : quickAdd(product.id)
+                    }
                     t={t}
                   />
                 ))}
@@ -411,6 +500,45 @@ export function App() {
             )}
           </div>
         </section>
+        {recent.length > 0 && (
+          <section
+            className="recently-viewed shell"
+            aria-labelledby="recent-title"
+          >
+            <div className="recent-heading">
+              <div>
+                <span>
+                  {language === "ka" ? "შენი ისტორია" : "Your history"}
+                </span>
+                <h2 id="recent-title">
+                  {language === "ka" ? "ბოლოს ნანახი" : "Recently viewed"}
+                </h2>
+              </div>
+              <button onClick={() => setRecent([])}>{t("reset")}</button>
+            </div>
+            <div className="recent-grid">
+              {products
+                .filter((product) => recent.includes(product.id))
+                .sort((a, b) => recent.indexOf(a.id) - recent.indexOf(b.id))
+                .slice(0, 4)
+                .map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    saved={saved.includes(product.id)}
+                    onSave={() => toggleSave(product.id)}
+                    onOpen={() => openProduct(product)}
+                    onAdd={() =>
+                      product.variants.length || !product.inStock
+                        ? openProduct(product)
+                        : quickAdd(product.id)
+                    }
+                    t={t}
+                  />
+                ))}
+            </div>
+          </section>
+        )}
         <section className="values shell" id="about">
           <article>
             <BadgeCheck />
@@ -450,14 +578,14 @@ export function App() {
           <aside className="saved-panel" role="dialog" aria-modal="true">
             <header>
               <div>
-                <span>{saved.length}</span>
+                <span>{validSaved.length}</span>
                 <h2>{t("saved")}</h2>
               </div>
               <button onClick={() => setSavedOnly(false)} aria-label="Close">
                 <X />
               </button>
             </header>
-            {saved.length ? (
+            {validSaved.length ? (
               <div className="saved-list">
                 {products
                   .filter((product) => saved.includes(product.id))
@@ -507,8 +635,23 @@ export function App() {
         product={selectedProduct}
         saved={selectedProduct ? saved.includes(selectedProduct.id) : false}
         onSave={() => selectedProduct && toggleSave(selectedProduct.id)}
-        onAdd={() => selectedProduct && addToCart(selectedProduct.id)}
+        onAdd={(variant) =>
+          selectedProduct && addToCart(selectedProduct.id, variant)
+        }
         onClose={() => setSelectedProduct(null)}
+        relatedProducts={
+          selectedProduct
+            ? products
+                .filter(
+                  (product) =>
+                    product.categories.some((category) =>
+                      selectedProduct.categories.includes(category),
+                    ) && product.id !== selectedProduct.id,
+                )
+                .slice(0, 3)
+            : []
+        }
+        onRelated={openProduct}
         t={t}
       />
       <CartDrawer
@@ -529,6 +672,20 @@ export function App() {
         open={newsletterOpen}
         onClose={() => setNewsletterOpen(false)}
       />
+      {toast && (
+        <div className="cart-toast" role="status" aria-live="polite">
+          <BadgeCheck />
+          <span>{toast}</span>
+          <button
+            onClick={() => {
+              setToast("");
+              setCartOpen(true);
+            }}
+          >
+            {t("cart")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

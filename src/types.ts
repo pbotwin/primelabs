@@ -15,6 +15,7 @@ export interface Product {
   brand: string;
   name: string;
   category: Exclude<Category, "all">;
+  categories: Exclude<Category, "all">[];
   image: string;
   slug: string;
   subtitle: string;
@@ -22,4 +23,16 @@ export interface Product {
   previousPrice?: number;
   from?: boolean;
   badge?: "bestseller" | "sale";
+  description: Partial<Record<Language, string>>;
+  inStock: boolean;
+  variants: ProductVariant[];
+  subcategories: string[];
+}
+export interface ProductVariant {
+  id: string;
+  name: string;
+  price: number;
+  previousPrice?: number;
+  inStock: boolean;
+  image?: string;
 }

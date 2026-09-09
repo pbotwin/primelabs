@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   CheckCircle2,
   Minus,
@@ -8,11 +8,16 @@ import {
   X,
 } from "lucide-react";
 import { uiCopy } from "../data/uiCopy";
-import type { Language, Product } from "../types";
+import type { Language, Product, ProductVariant } from "../types";
 interface Props {
   language: Language;
   open: boolean;
-  items: { product: Product; quantity: number }[];
+  items: {
+    key: string;
+    product: Product;
+    variant?: ProductVariant;
+    quantity: number;
+  }[];
   onClose: () => void;
   onQuantity: (id: string, quantity: number) => void;
   onComplete: () => void;
@@ -26,14 +31,45 @@ export function CartDrawer({
   onComplete,
 }: Props) {
   const [step, setStep] = useState<"bag" | "checkout" | "done">("bag");
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.classList.add("modal-open");
+    addEventListener("keydown", handleKey);
+    return () => {
+      document.body.classList.remove("modal-open");
+      removeEventListener("keydown", handleKey);
+    };
+  }, [open, onClose]);
   if (!open) return null;
   const u = uiCopy[language];
   const total = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) =>
+      sum + (item.variant?.price ?? item.product.price) * item.quantity,
     0,
   );
-  const submit = (event: FormEvent) => {
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const lines = items.map(
+      ({ product, variant, quantity }) =>
+        `• ${product.name}${variant ? ` (${variant.name})` : ""} × ${quantity} — ₾${((variant?.price ?? product.price) * quantity).toFixed(2)}`,
+    );
+    const message = [
+      "PrimeLabs order",
+      ...lines,
+      `Total: ₾${total.toFixed(2)}`,
+      `Name: ${data.get("name")}`,
+      `Phone: ${data.get("phone")}`,
+      `Address: ${data.get("address")}, ${data.get("city")}`,
+    ].join("\n");
+    window.open(
+      `https://wa.me/995551022087?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
     onComplete();
     setStep("done");
   };
@@ -83,6 +119,7 @@ export function CartDrawer({
             <label>
               {u.fullName}
               <input
+                name="name"
                 required
                 autoComplete="name"
                 placeholder={u.namePlaceholder}
@@ -91,6 +128,7 @@ export function CartDrawer({
             <label>
               {u.phone}
               <input
+                name="phone"
                 required
                 type="tel"
                 inputMode="tel"
@@ -102,6 +140,7 @@ export function CartDrawer({
             <label>
               {u.address}
               <input
+                name="address"
                 required
                 autoComplete="street-address"
                 placeholder={u.addressPlaceholder}
@@ -109,7 +148,7 @@ export function CartDrawer({
             </label>
             <label>
               {u.city}
-              <select required defaultValue="">
+              <select name="city" required defaultValue="">
                 <option value="" disabled>
                   {u.selectCity}
                 </option>
@@ -153,23 +192,29 @@ export function CartDrawer({
         ) : (
           <>
             <div className="cart-items">
-              {items.map(({ product, quantity }) => (
-                <article key={product.id}>
-                  <img src={product.image} alt={product.name} />
+              {items.map(({ key, product, variant, quantity }) => (
+                <article key={key}>
+                  <img
+                    src={variant?.image ?? product.image}
+                    alt={product.name}
+                  />
                   <div>
                     <small>{product.brand}</small>
                     <h3>{product.name}</h3>
-                    <strong>₾{product.price.toFixed(2)}</strong>
+                    {variant && <em>{variant.name}</em>}
+                    <strong>
+                      ₾{(variant?.price ?? product.price).toFixed(2)}
+                    </strong>
                     <div className="quantity">
                       <button
-                        onClick={() => onQuantity(product.id, quantity - 1)}
+                        onClick={() => onQuantity(key, quantity - 1)}
                         aria-label="−"
                       >
                         {quantity === 1 ? <Trash2 /> : <Minus />}
                       </button>
                       <span>{quantity}</span>
                       <button
-                        onClick={() => onQuantity(product.id, quantity + 1)}
+                        onClick={() => onQuantity(key, quantity + 1)}
                         aria-label="+"
                       >
                         <Plus />
@@ -180,6 +225,22 @@ export function CartDrawer({
               ))}
             </div>
             <footer>
+              <div className="delivery-progress">
+                <span>
+                  {total >= 150
+                    ? language === "ka"
+                      ? "უფასო მიწოდება გააქტიურებულია"
+                      : "Free delivery unlocked"
+                    : language === "ka"
+                      ? `დაამატე ₾${(150 - total).toFixed(0)} უფასო მიწოდებისთვის`
+                      : `Add ₾${(150 - total).toFixed(0)} for free delivery`}
+                </span>
+                <i>
+                  <b
+                    style={{ width: `${Math.min(100, (total / 150) * 100)}%` }}
+                  />
+                </i>
+              </div>
               <div>
                 <span>{u.total}</span>
                 <strong>₾{total.toFixed(2)}</strong>

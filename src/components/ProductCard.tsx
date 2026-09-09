@@ -1,4 +1,4 @@
-import { ArrowUpRight, Heart } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 import type { CopyKey } from "../data/translations";
 import type { Product } from "../types";
 interface Props {
@@ -6,9 +6,17 @@ interface Props {
   saved: boolean;
   onSave: () => void;
   onOpen: () => void;
+  onAdd: () => void;
   t: (key: CopyKey) => string;
 }
-export function ProductCard({ product, saved, onSave, onOpen, t }: Props) {
+export function ProductCard({
+  product,
+  saved,
+  onSave,
+  onOpen,
+  onAdd,
+  t,
+}: Props) {
   const discount = product.previousPrice
     ? Math.round((1 - product.price / product.previousPrice) * 100)
     : 0;
@@ -58,9 +66,13 @@ export function ProductCard({ product, saved, onSave, onOpen, t }: Props) {
               <del>₾{product.previousPrice.toFixed(2)}</del>
             )}
           </div>
-          <button className="buy" onClick={onOpen}>
+          <button
+            className="buy"
+            onClick={onAdd}
+            aria-label={`${t("buy")}: ${product.name}`}
+          >
             <span>{t("buy")}</span>
-            <ArrowUpRight />
+            <Plus />
           </button>
         </div>
       </div>
