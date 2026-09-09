@@ -1,4 +1,4 @@
-import { Heart, Plus } from "lucide-react";
+import { Check, Heart, Plus } from "lucide-react";
 import type { CopyKey } from "../data/translations";
 import type { Product } from "../types";
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   onSave: () => void;
   onOpen: () => void;
   onAdd: () => void;
+  added: boolean;
   t: (key: CopyKey) => string;
 }
 export function ProductCard({
@@ -15,6 +16,7 @@ export function ProductCard({
   onSave,
   onOpen,
   onAdd,
+  added,
   t,
 }: Props) {
   const discount = product.previousPrice
@@ -57,7 +59,19 @@ export function ProductCard({
             {product.name}
           </button>
         </h3>
-        <p className="subtitle">{product.subtitle}</p>
+        <p className="subtitle">
+          {product.variants.length ? t(product.category) : product.subtitle}
+        </p>
+        <div className="card-meta">
+          <span className={product.inStock ? "available" : "unavailable"}>
+            <i /> {product.inStock ? t("inStockShort") : t("outOfStock")}
+          </span>
+          {product.variants.length > 0 && (
+            <span>
+              {product.variants.length} {t("options")}
+            </span>
+          )}
+        </div>
         <div className="product-bottom">
           <div className="price">
             {product.from && <small>{t("from")}</small>}
@@ -67,12 +81,12 @@ export function ProductCard({
             )}
           </div>
           <button
-            className="buy"
+            className={added ? "buy added" : "buy"}
             onClick={onAdd}
             aria-label={`${t("buy")}: ${product.name}`}
           >
-            <span>{t("buy")}</span>
-            <Plus />
+            <span>{added ? t("added") : t("buy")}</span>
+            {added ? <Check /> : <Plus />}
           </button>
         </div>
       </div>

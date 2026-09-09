@@ -108,6 +108,8 @@ export function App() {
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [addedProductId, setAddedProductId] = useState("");
+  const [page, setPage] = useState(1);
   const [featuredSlide, setFeaturedSlide] = useState(0);
   const [featuredPaused, setFeaturedPaused] = useState(false);
   const [recent, setRecent] = useLocalStorage<string[]>("primelabs-recent", []);
@@ -157,18 +159,21 @@ export function App() {
     saved,
   ]);
   const filter = (id: Category) => {
+    setPage(1);
     setCategory(id);
     setSubcategory("all");
     setBrand("all");
     setSavedOnly(false);
   };
   const changeQuery = (value: string) => {
+    setPage(1);
     if (value && query === "")
       setSearchHeight(catalogRef.current?.offsetHeight ?? 0);
     if (value === "") setSearchHeight(0);
     setQuery(value);
   };
   const reset = () => {
+    setPage(1);
     setCategory("all");
     setSubcategory("all");
     setBrand("all");
@@ -198,6 +203,7 @@ export function App() {
   const quickAdd = (id: string) => {
     setCart((items) => ({ ...items, [id]: (items[id] ?? 0) + 1 }));
     const product = products.find((item) => item.id === id);
+    setAddedProductId(id);
     setToast(
       language === "ka"
         ? `${product?.name ?? "პროდუქტი"} დაემატა კალათაში`
@@ -212,7 +218,10 @@ export function App() {
   };
   useEffect(() => {
     if (!toast) return;
-    const timer = window.setTimeout(() => setToast(""), 2600);
+    const timer = window.setTimeout(() => {
+      setToast("");
+      setAddedProductId("");
+    }, 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
   useEffect(() => {
@@ -244,6 +253,12 @@ export function App() {
   const validSaved = saved.filter((id) =>
     products.some((product) => product.id === id),
   );
+  const pageCount = Math.max(1, Math.ceil(visible.length / 20));
+  const currentPage = Math.min(page, pageCount);
+  const paginatedProducts = visible.slice(
+    (currentPage - 1) * 20,
+    currentPage * 20,
+  );
   return (
     <div
       id="top"
@@ -262,6 +277,7 @@ export function App() {
         savedCount={validSaved.length}
         savedOnly={savedOnly}
         onSaved={() => {
+          setPage(1);
           setSavedOnly(true);
         }}
         cartCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
@@ -434,7 +450,10 @@ export function App() {
               <div className="subcategory-list" aria-label={t("subcategories")}>
                 <button
                   className={subcategory === "all" ? "active" : ""}
-                  onClick={() => setSubcategory("all")}
+                  onClick={() => {
+                    setPage(1);
+                    setSubcategory("all");
+                  }}
                 >
                   {t("all")}
                 </button>
@@ -442,7 +461,10 @@ export function App() {
                   <button
                     key={item.id}
                     className={subcategory === item.id ? "active" : ""}
-                    onClick={() => setSubcategory(item.id)}
+                    onClick={() => {
+                      setPage(1);
+                      setSubcategory(item.id);
+                    }}
                   >
                     {item.label[language]}
                   </button>
@@ -454,7 +476,10 @@ export function App() {
               <div className="brand-list">
                 <button
                   className={brand === "all" ? "active" : ""}
-                  onClick={() => setBrand("all")}
+                  onClick={() => {
+                    setPage(1);
+                    setBrand("all");
+                  }}
                   aria-pressed={brand === "all"}
                 >
                   {t("allBrands")}
@@ -463,7 +488,10 @@ export function App() {
                   <button
                     key={item}
                     className={brand === item ? "active" : ""}
-                    onClick={() => setBrand(item)}
+                    onClick={() => {
+                      setPage(1);
+                      setBrand(item);
+                    }}
                     aria-pressed={brand === item}
                   >
                     {item}
@@ -482,7 +510,10 @@ export function App() {
                       min="0"
                       placeholder="0"
                       value={minPrice}
-                      onChange={(event) => setMinPrice(event.target.value)}
+                      onChange={(event) => {
+                        setPage(1);
+                        setMinPrice(event.target.value);
+                      }}
                       aria-label={`${t("price")} ${t("priceFrom")}`}
                     />
                     <b>₾</b>
@@ -495,7 +526,10 @@ export function App() {
                       min="0"
                       placeholder="500"
                       value={maxPrice}
-                      onChange={(event) => setMaxPrice(event.target.value)}
+                      onChange={(event) => {
+                        setPage(1);
+                        setMaxPrice(event.target.value);
+                      }}
                       aria-label={`${t("price")} ${t("priceTo")}`}
                     />
                     <b>₾</b>
@@ -504,7 +538,13 @@ export function App() {
               </div>
               <label>
                 <span>{t("sort")}</span>
-                <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <select
+                  value={sort}
+                  onChange={(event) => {
+                    setPage(1);
+                    setSort(event.target.value);
+                  }}
+                >
                   <option value="featured">{t("featured")}</option>
                   <option value="low">{t("low")}</option>
                   <option value="high">{t("high")}</option>
@@ -575,7 +615,7 @@ export function App() {
           >
             {visible.length ? (
               <div className="product-grid">
-                {visible.map((product) => (
+                {paginatedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -587,6 +627,7 @@ export function App() {
                         ? openProduct(product)
                         : quickAdd(product.id)
                     }
+                    added={addedProductId === product.id}
                     t={t}
                   />
                 ))}
@@ -600,6 +641,41 @@ export function App() {
                   {t("reset")}
                 </button>
               </div>
+            )}
+            {visible.length > 20 && (
+              <nav className="pagination" aria-label="Product pages">
+                <button
+                  className="pagination-step"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage((value) => Math.max(1, value - 1))}
+                >
+                  {t("previous")}
+                </button>
+                <div>
+                  {Array.from(
+                    { length: pageCount },
+                    (_, index) => index + 1,
+                  ).map((item) => (
+                    <button
+                      key={item}
+                      className={currentPage === item ? "active" : ""}
+                      onClick={() => setPage(item)}
+                      aria-current={currentPage === item ? "page" : undefined}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="pagination-step"
+                  disabled={currentPage === pageCount}
+                  onClick={() =>
+                    setPage((value) => Math.min(pageCount, value + 1))
+                  }
+                >
+                  {t("next")}
+                </button>
+              </nav>
             )}
           </div>
         </section>
@@ -636,6 +712,7 @@ export function App() {
                         ? openProduct(product)
                         : quickAdd(product.id)
                     }
+                    added={addedProductId === product.id}
                     t={t}
                   />
                 ))}

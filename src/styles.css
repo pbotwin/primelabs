@@ -1247,6 +1247,126 @@ img {
   outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
+
+/* Product-card feedback, useful metadata, and catalog pagination */
+#product-grid-anchor {
+  overflow-anchor: none;
+}
+.product-card {
+  display: flex;
+  flex-direction: column;
+}
+.product-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.card-meta {
+  min-height: 18px;
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 8px;
+}
+.card-meta span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.card-meta span + span {
+  padding-left: 7px;
+  border-left: 1px solid var(--line);
+}
+.card-meta i {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: #2ca56a;
+  box-shadow: 0 0 0 2px rgba(44, 165, 106, 0.12);
+}
+.card-meta .unavailable {
+  color: #a23b3b;
+}
+.card-meta .unavailable i {
+  background: #c75555;
+  box-shadow: 0 0 0 2px rgba(199, 85, 85, 0.1);
+}
+.product-bottom {
+  margin-top: auto;
+  padding-top: 12px;
+}
+.buy.added {
+  background: #23885a;
+  color: #fff;
+}
+.pagination {
+  margin: 28px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pagination button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 750;
+}
+.pagination button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand-deep);
+}
+.pagination button.active {
+  border-color: var(--brand-deep);
+  background: var(--brand-deep);
+  color: #fff;
+}
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+.pagination-step {
+  min-width: 76px !important;
+}
+@media (max-width: 639px) {
+  .card-meta {
+    gap: 5px;
+  }
+  .card-meta span + span {
+    padding-left: 5px;
+  }
+  .pagination {
+    margin: 20px 0 0;
+    gap: 5px;
+  }
+  .pagination button {
+    min-width: 32px;
+    height: 32px;
+    padding-inline: 7px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+  .pagination-step {
+    min-width: 58px !important;
+  }
+}
 @media (min-width: 900px) {
   :root {
     --gutter: 38px;
