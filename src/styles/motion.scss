@@ -58,11 +58,6 @@ main {
     box-shadow 0.2s ease,
     transform 0.2s ease;
 }
-.category:hover {
-  border-color: color-mix(in srgb, var(--brand) 48%, var(--line));
-  box-shadow: 0 5px 12px rgba(185, 0, 198, 0.07);
-  transform: translateY(-1px);
-}
 .product-card {
   position: relative;
   border-color: rgba(73, 47, 78, 0.11);
@@ -76,6 +71,11 @@ main {
   background: linear-gradient(135deg, #f4f1f5, #ece8ee);
 }
 @media (hover: hover) {
+  .category:hover {
+    border-color: color-mix(in srgb, var(--brand) 48%, var(--line));
+    box-shadow: 0 5px 12px rgba(185, 0, 198, 0.07);
+    transform: translateY(-1px);
+  }
   .product-card:hover {
     border-color: rgba(230, 0, 245, 0.2);
     box-shadow: 0 14px 32px rgba(43, 20, 47, 0.09);

@@ -613,6 +613,9 @@ select:focus-visible {
   aspect-ratio: 1;
   min-height: 0;
   overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 12px;
   background: var(--soft);
 }
 .product-card__media img {
