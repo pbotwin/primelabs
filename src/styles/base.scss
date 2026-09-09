@@ -194,7 +194,7 @@ select:focus-visible {
   font-weight: 600;
 }
 .site-header__nav a:hover {
-  background: var(--surface);
+  color: var(--brand-deep);
 }
 .site-header__actions {
   display: flex;
@@ -555,10 +555,6 @@ select:focus-visible {
 }
 .category.active small {
   color: var(--brand-deep);
-}
-.category.active .all-mark {
-  background: var(--brand);
-  color: #210023;
 }
 .sort {
   display: flex;

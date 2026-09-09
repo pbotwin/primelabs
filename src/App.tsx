@@ -1,5 +1,16 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { BadgeCheck, Search, X } from "lucide-react";
+import {
+  BadgeCheck,
+  Cookie,
+  Dumbbell,
+  Flame,
+  Grid2X2,
+  Search,
+  Waves,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { FeaturedProducts } from "./components/FeaturedProducts";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
@@ -13,23 +24,37 @@ import { RecentlyViewed } from "./components/RecentlyViewed";
 import { StoreBenefits } from "./components/StoreBenefits";
 import { STORE } from "./config/store";
 import { products } from "./data/products";
-import { copy, type CopyKey } from "./data/translations";
+import { copy } from "./data/translations";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import type { Category, Language, ProductVariant } from "./types";
 import { filterProducts, type CatalogSort } from "./utils/catalog";
 import { isCart, isLanguage, isStringArray } from "./utils/storageValidators";
 
-const categories: { id: Category; image?: string }[] = [
-  { id: "all" },
-  { id: "creatine", image: "./creatine.webp" },
-  { id: "protein", image: "./whey.webp" },
-  { id: "amino", image: "./vplab.webp" },
-  { id: "vitamins", image: "./vitamins.webp" },
-  { id: "preworkout" },
-  { id: "fatburners" },
-  { id: "gainer" },
-  { id: "hydration" },
-  { id: "snacks" },
+const categoryImages = new Map<string, string>();
+const categoryIcons: Record<string, LucideIcon> = {
+  all: Grid2X2,
+  preworkout: Zap,
+  fatburners: Flame,
+  gainer: Dumbbell,
+  hydration: Waves,
+  snacks: Cookie,
+};
+
+for (const product of products) {
+  for (const categoryId of product.categories) {
+    if (!categoryImages.has(categoryId)) {
+      categoryImages.set(categoryId, product.image);
+    }
+  }
+}
+
+const categories: { id: Category; image?: string; icon?: LucideIcon }[] = [
+  { id: "all", icon: categoryIcons.all },
+  ...Array.from(categoryImages, ([id, image]) => ({
+    id,
+    image: categoryIcons[id] ? undefined : image,
+    icon: categoryIcons[id],
+  })),
 ];
 
 type Subcategory = {
@@ -121,7 +146,14 @@ export function App() {
   );
   const catalogRef = useRef<HTMLDivElement>(null);
   const [searchHeight, setSearchHeight] = useState(0);
-  const t = (key: CopyKey) => copy[language][key];
+  const t = (key: string) => {
+    const translated = (copy[language] as Record<string, string>)[key];
+    if (translated) return translated;
+
+    return key
+      .replace(/[-_]+/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toLocaleUpperCase());
+  };
   const visible = useMemo(() => {
     const activeSubcategory = subcategories[category]?.find(
       (item) => item.id === subcategory,
@@ -274,28 +306,34 @@ export function App() {
               {categories.map((item) => (
                 <button
                   key={item.id}
-                  className={
-                    category === item.id ? "category active" : "category"
-                  }
+                  className={[
+                    "category",
+                    !item.image && "category--text-only",
+                    category === item.id && "active",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   onClick={() => filter(item.id)}
                   aria-pressed={category === item.id}
                 >
                   {item.image ? (
-                    <span>
+                    <span className="category__visual">
                       <img src={item.image} alt="" />
                     </span>
                   ) : (
-                    <span className="all-mark">✦</span>
+                    <span
+                      className="category__visual category__visual--icon"
+                      aria-hidden="true"
+                    >
+                      {item.icon ? <item.icon /> : <Grid2X2 />}
+                    </span>
                   )}
                   <b>{t(item.id)}</b>
                   <small>
                     {item.id === "all"
                       ? products.length
-                      : products.filter((p) =>
-                          p.categories.includes(
-                            item.id as Exclude<Category, "all">,
-                          ),
-                        ).length}
+                      : products.filter((p) => p.categories.includes(item.id))
+                          .length}
                   </small>
                 </button>
               ))}
@@ -325,11 +363,15 @@ export function App() {
                 ))}
               </div>
             ) : null}
-            <div className="brand-filter" aria-label={t("brands")}>
-              <span>{t("brands")}</span>
-              <div className="brand-list">
+            <div className="catalog-filter__brand" aria-label={t("brands")}>
+              <span className="catalog-filter__brand-label">{t("brands")}</span>
+              <div className="catalog-filter__brand-list">
                 <button
-                  className={brand === "all" ? "active" : ""}
+                  className={
+                    brand === "all"
+                      ? "catalog-filter__brand-option catalog-filter__brand-option--active"
+                      : "catalog-filter__brand-option"
+                  }
                   onClick={() => {
                     setPage(1);
                     setBrand("all");
@@ -341,7 +383,11 @@ export function App() {
                 {brands.map((item) => (
                   <button
                     key={item}
-                    className={brand === item ? "active" : ""}
+                    className={
+                      brand === item
+                        ? "catalog-filter__brand-option catalog-filter__brand-option--active"
+                        : "catalog-filter__brand-option"
+                    }
                     onClick={() => {
                       setPage(1);
                       setBrand(item);

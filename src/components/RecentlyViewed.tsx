@@ -1,4 +1,3 @@
-import type { CopyKey } from "../data/translations";
 import type { Language, Product } from "../types";
 import { ProductCard } from "./ProductCard";
 
@@ -12,7 +11,7 @@ type RecentlyViewedProps = {
   onSave: (productId: string) => void;
   onOpen: (product: Product) => void;
   onQuickAdd: (product: Product) => void;
-  t: (key: CopyKey) => string;
+  t: (key: string) => string;
 };
 
 export function RecentlyViewed({

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ArrowRight, Check, Heart, ShieldCheck, X } from "lucide-react";
-import type { CopyKey } from "../data/translations";
 import { uiCopy } from "../data/uiCopy";
 import { STORE } from "../config/store";
 import { useModalDialog } from "../hooks/useModalDialog";
@@ -14,7 +13,7 @@ interface Props {
   onClose: () => void;
   relatedProducts: Product[];
   onRelated: (product: Product) => void;
-  t: (key: CopyKey) => string;
+  t: (key: string) => string;
 }
 export function ProductDialog({
   language,

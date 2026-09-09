@@ -72,9 +72,13 @@
     object-fit: contain;
     padding: 2px;
   }
-  .category > .all-mark {
+  .category__visual--icon {
     color: var(--brand-deep);
-    font-size: 13px;
+  }
+  .category__visual--icon svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.8;
   }
   .category b {
     font-size: 10px;
@@ -117,10 +121,10 @@
     background: var(--surface);
     font-size: 8px;
   }
-  .brand-filter {
+  .catalog-filter__brand {
     padding: 7px 0;
   }
-  .brand-list button {
+  .catalog-filter__brand-option {
     min-height: 30px;
     border-radius: 8px;
   }
@@ -199,6 +203,34 @@
   }
 }
 
+.category.category--text-only.active {
+  border-color: color-mix(in srgb, var(--brand) 52%, var(--line));
+  background: color-mix(in srgb, var(--brand) 5%, var(--surface));
+  box-shadow: none;
+}
+
+.category--text-only > .category__visual--icon {
+  background: color-mix(in srgb, var(--brand) 7%, var(--soft));
+  color: color-mix(in srgb, var(--brand-deep) 72%, var(--muted));
+}
+
+.category.category--text-only.active > .category__visual--icon {
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  color: var(--brand-deep);
+}
+
+@media (min-width: 640px) and (max-width: 899px) {
+  .catalog-filter__brand {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 7px;
+  }
+  .catalog-filter__brand-list {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
 /* Desktop catalog filters */
 @media (min-width: 900px) {
   .catalog-tools {
@@ -272,18 +304,27 @@
     min-height: 32px;
     border-radius: 9px;
   }
-  .brand-filter {
-    min-height: 52px;
-    padding: 10px 0;
-    grid-template-columns: 76px minmax(0, 1fr);
+  .catalog-filter__brand {
+    min-height: 0;
+    padding: 12px 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
-  .brand-filter > span {
+  .catalog-filter__brand-label {
     color: var(--ink);
     font-size: 9px;
   }
-  .brand-list button {
+  .catalog-filter__brand-list {
+    width: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .catalog-filter__brand-option {
     min-height: 34px;
     padding-inline: 13px;
+    max-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
   }
   .sort {
     min-height: 56px;

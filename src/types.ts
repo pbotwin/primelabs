@@ -1,21 +1,11 @@
 export type Language = "ka" | "en";
-export type Category =
-  | "all"
-  | "creatine"
-  | "protein"
-  | "amino"
-  | "vitamins"
-  | "preworkout"
-  | "fatburners"
-  | "gainer"
-  | "hydration"
-  | "snacks";
+export type Category = string;
 export interface Product {
   id: string;
   brand: string;
   name: string;
-  category: Exclude<Category, "all">;
-  categories: Exclude<Category, "all">[];
+  category: Category;
+  categories: Category[];
   image: string;
   slug: string;
   subtitle: string;

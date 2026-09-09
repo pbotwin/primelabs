@@ -1,6 +1,5 @@
 import { Check, Heart, Plus } from "lucide-react";
 import { STORE } from "../config/store";
-import type { CopyKey } from "../data/translations";
 import type { Product } from "../types";
 interface Props {
   product: Product;
@@ -9,7 +8,7 @@ interface Props {
   onOpen: () => void;
   onAdd: () => void;
   added: boolean;
-  t: (key: CopyKey) => string;
+  t: (key: string) => string;
 }
 export function ProductCard({
   product,
