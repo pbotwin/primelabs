@@ -3314,3 +3314,102 @@ footer {
     padding-top: 20px;
   }
 }
+
+/* Desktop catalog filters */
+@media (min-width: 900px) {
+  .catalog-tools {
+    margin-bottom: 14px;
+    padding: 14px;
+    border-radius: 18px;
+    background: var(--surface);
+  }
+  .category-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    overflow: visible;
+    padding-bottom: 14px;
+  }
+  .category {
+    width: 100%;
+    height: 56px;
+    min-width: 0;
+    padding: 6px 12px 6px 6px;
+    gap: 9px;
+    border-radius: 12px;
+    background: var(--canvas);
+    transition:
+      border-color 0.2s,
+      background 0.2s,
+      transform 0.2s;
+  }
+  .category:hover {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+    transform: translateY(-1px);
+  }
+  .category.active {
+    border-color: var(--brand);
+    background: color-mix(in srgb, var(--brand) 9%, var(--surface));
+    color: var(--brand-deep);
+  }
+  .category > span {
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+    background: var(--surface);
+  }
+  .category b {
+    min-width: 0;
+    overflow: visible;
+    font-size: 11px;
+    line-height: 1.2;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .category small {
+    min-width: 22px;
+    height: 22px;
+    margin-left: auto;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 9px;
+  }
+  .category.active small {
+    background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+    color: var(--brand-deep);
+  }
+  .subcategory-list {
+    padding: 10px 0;
+  }
+  .subcategory-list button {
+    min-height: 32px;
+    border-radius: 9px;
+  }
+  .brand-filter {
+    min-height: 52px;
+    padding: 10px 0;
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+  .brand-filter > span {
+    color: var(--ink);
+    font-size: 9px;
+  }
+  .brand-list button {
+    min-height: 34px;
+    padding-inline: 13px;
+  }
+  .sort {
+    min-height: 56px;
+    margin: 0;
+    padding-top: 10px;
+    grid-template-columns: 174px minmax(170px, 200px);
+    justify-content: space-between;
+  }
+  .catalog-summary {
+    margin-top: -3px;
+    margin-bottom: 12px;
+  }
+}
