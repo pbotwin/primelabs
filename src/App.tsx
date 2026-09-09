@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
   Heart,
   Headphones,
   Search,
@@ -79,6 +81,7 @@ const brands = [...new Set(products.map((product) => product.brand))].sort();
 const featuredBundle = products.find((product) => product.id === "100")!;
 const featuredCreatine = products.find((product) => product.id === "101")!;
 const featuredBcaa = products.find((product) => product.id === "38")!;
+const featuredSlides = [featuredBundle, featuredCreatine, featuredBcaa];
 
 export function App() {
   const [language, setLanguage] = useLocalStorage<Language>(
@@ -105,8 +108,11 @@ export function App() {
   const [contactOpen, setContactOpen] = useState(false);
   const [newsletterOpen, setNewsletterOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [featuredSlide, setFeaturedSlide] = useState(0);
+  const [featuredPaused, setFeaturedPaused] = useState(false);
   const [recent, setRecent] = useLocalStorage<string[]>("primelabs-recent", []);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const featuredTouch = useRef<number | null>(null);
   const [searchHeight, setSearchHeight] = useState(0);
   const t = (key: CopyKey) => copy[language][key];
   const visible = useMemo(() => {
@@ -209,6 +215,18 @@ export function App() {
     const timer = window.setTimeout(() => setToast(""), 2600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+  useEffect(() => {
+    if (
+      featuredPaused ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const timer = window.setInterval(
+      () => setFeaturedSlide((slide) => (slide + 1) % featuredSlides.length),
+      5500,
+    );
+    return () => window.clearInterval(timer);
+  }, [featuredPaused]);
   const cartItems = products.flatMap((product) =>
     Object.entries(cart)
       .filter(
@@ -227,7 +245,13 @@ export function App() {
     products.some((product) => product.id === id),
   );
   return (
-    <div id="top" lang={language}>
+    <div
+      id="top"
+      lang={language}
+      onDragStart={(event) => {
+        if (event.target instanceof HTMLImageElement) event.preventDefault();
+      }}
+    >
       <a className="skip" href="#product-grid-anchor">
         Skip to products
       </a>
@@ -252,26 +276,105 @@ export function App() {
       />
       <main>
         <section className="featured shell" aria-label="Featured products">
-          <button
-            className="featured-main"
-            onClick={() => openProduct(featuredBundle)}
+          <div
+            className="featured-main-slider"
+            aria-roledescription="carousel"
+            onMouseEnter={() => setFeaturedPaused(true)}
+            onMouseLeave={() => setFeaturedPaused(false)}
+            onTouchStart={(event) => {
+              featuredTouch.current = event.touches[0]?.clientX ?? null;
+              setFeaturedPaused(true);
+            }}
+            onTouchEnd={(event) => {
+              const start = featuredTouch.current;
+              const end = event.changedTouches[0]?.clientX;
+              if (
+                start !== null &&
+                end !== undefined &&
+                Math.abs(start - end) > 45
+              )
+                setFeaturedSlide((slide) =>
+                  start > end
+                    ? (slide + 1) % featuredSlides.length
+                    : (slide - 1 + featuredSlides.length) %
+                      featuredSlides.length,
+                );
+              featuredTouch.current = null;
+              setFeaturedPaused(false);
+            }}
           >
-            <div>
-              <span className="deal-label">−13% {t("sale")}</span>
-              <h1>
-                Beef Protein
-                <br />+ Creatine
-              </h1>
-              <p>
-                <strong>₾130.00</strong>
-                <del>₾149.43</del>
-              </p>
-              <span className="featured-action">
-                {t("buy")} <ArrowRight />
-              </span>
+            {featuredSlides.map((product, index) => {
+              const discount = product.previousPrice
+                ? Math.round((1 - product.price / product.previousPrice) * 100)
+                : 0;
+              return (
+                <button
+                  key={product.id}
+                  className={
+                    featuredSlide === index
+                      ? "featured-main featured-main-current active"
+                      : "featured-main featured-main-current"
+                  }
+                  onClick={() => openProduct(product)}
+                  aria-hidden={featuredSlide !== index}
+                  tabIndex={featuredSlide === index ? 0 : -1}
+                >
+                  <div>
+                    <span className="deal-label">
+                      {discount ? `−${discount}% ${t("sale")}` : product.brand}
+                    </span>
+                    <h1>{product.name}</h1>
+                    <p>
+                      {product.from && <small>{t("from")}</small>}
+                      <strong>₾{product.price.toFixed(2)}</strong>
+                      {product.previousPrice && (
+                        <del>₾{product.previousPrice.toFixed(2)}</del>
+                      )}
+                    </p>
+                    <span className="featured-action">
+                      {t("buy")} <ArrowRight />
+                    </span>
+                  </div>
+                  <img
+                    src={product.image}
+                    alt={`${product.brand} ${product.name}`}
+                  />
+                </button>
+              );
+            })}
+            <button
+              className="featured-slider-arrow previous"
+              onClick={() =>
+                setFeaturedSlide(
+                  (slide) =>
+                    (slide - 1 + featuredSlides.length) % featuredSlides.length,
+                )
+              }
+              aria-label="Previous product"
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              className="featured-slider-arrow next"
+              onClick={() =>
+                setFeaturedSlide((slide) => (slide + 1) % featuredSlides.length)
+              }
+              aria-label="Next product"
+            >
+              <ChevronRight />
+            </button>
+            <div className="featured-slider-dots">
+              {featuredSlides.map((product, index) => (
+                <button
+                  key={product.id}
+                  className={featuredSlide === index ? "active" : ""}
+                  onClick={() => setFeaturedSlide(index)}
+                  aria-label={`Slide ${index + 1}: ${product.name}`}
+                  aria-current={featuredSlide === index ? "true" : undefined}
+                />
+              ))}
             </div>
-            <img src="./bundle.jpg" alt="Beef Protein and Creatine bundle" />
-          </button>
+          </div>
           <div className="featured-side">
             <button onClick={() => openProduct(featuredCreatine)}>
               <img src="./creatine.webp" alt="Creatine Monohydrate" />
