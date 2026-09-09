@@ -359,19 +359,6 @@ export function App() {
                   </label>
                 </div>
               </div>
-              <div className="filter-summary">
-                <span className="result-count">
-                  {visible.length} {t("count")}
-                </span>
-                {(category !== "all" ||
-                  subcategory !== "all" ||
-                  brand !== "all" ||
-                  minPrice !== "" ||
-                  maxPrice !== "" ||
-                  sort !== "featured") && (
-                  <button onClick={reset}>{t("reset")}</button>
-                )}
-              </div>
               <label>
                 <span>{t("sort")}</span>
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -381,6 +368,18 @@ export function App() {
                 </select>
               </label>
             </div>
+          </div>
+          <div className="filter-summary catalog-summary">
+            <span className="result-count">
+              {visible.length} {t("count")}
+            </span>
+            {(category !== "all" ||
+              subcategory !== "all" ||
+              brand !== "all" ||
+              minPrice !== "" ||
+              maxPrice !== "" ||
+              sort !== "featured" ||
+              savedOnly) && <button onClick={reset}>{t("reset")}</button>}
           </div>
           <div
             id="product-grid-anchor"
