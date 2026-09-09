@@ -23,6 +23,15 @@ export function Footer({ t, onContact, onNewsletter }: FooterProps) {
           </button>
           <a href="#delivery">{t("footerDelivery")}</a>
           <a href="#support">{t("footerSupport")}</a>
+          <a
+            className="footer-address"
+            href="https://yandex.com.ge/maps/org/primelabs/220205956204/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("storeAddress")}
+          </a>
+          <a href="tel:+995551022087">+995 551 02 20 87</a>
         </nav>
         <section
           className="footer-newsletter"

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, Mail, Phone, X } from "lucide-react";
+import { CheckCircle2, Clock3, Mail, MapPin, Phone, X } from "lucide-react";
 import { uiCopy } from "../data/uiCopy";
 import type { Language } from "../types";
 export function ContactDialog({
@@ -53,12 +53,33 @@ export function ContactDialog({
               <p className="eyebrow">{u.helpLabel}</p>
               <h2 id="contact-title">{u.contactTitle}</h2>
               <div className="contact-links">
-                <a href="tel:+995555000000">
-                  <Phone /> +995 555 00 00 00
+                <a href="tel:+995551022087">
+                  <Phone /> +995 551 02 20 87
                 </a>
                 <a href="mailto:hello@primelabs.ge">
                   <Mail /> hello@primelabs.ge
                 </a>
+                <a
+                  href="https://yandex.com.ge/maps/org/primelabs/220205956204/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MapPin />
+                  {language === "ka"
+                    ? "თბილისი, მერაბ კოსტავას ქუჩა 72"
+                    : "72 Merab Kostava Street, Tbilisi"}
+                </a>
+                <div className="contact-hours">
+                  <Clock3 />
+                  <span>
+                    <b>
+                      {language === "ka" ? "სამუშაო საათები" : "Working hours"}
+                    </b>
+                    {language === "ka"
+                      ? "ყოველდღე, 11:00–20:45"
+                      : "Daily, 11:00–20:45"}
+                  </span>
+                </div>
               </div>
               <form onSubmit={submit}>
                 <label>

@@ -34,6 +34,55 @@ const categories: { id: Category; image?: string }[] = [
   { id: "snacks" },
 ];
 
+type Subcategory = {
+  id: string;
+  label: Record<Language, string>;
+  products: string[];
+};
+
+const subcategories: Partial<Record<Category, Subcategory[]>> = {
+  amino: [
+    {
+      id: "bcaa",
+      label: { ka: "BCAA", en: "BCAA" },
+      products: ["vplab", "nxt"],
+    },
+    { id: "eaa", label: { ka: "EAA", en: "EAA" }, products: ["bpi"] },
+  ],
+  protein: [
+    {
+      id: "whey",
+      label: { ka: "შრატის პროტეინი", en: "Whey protein" },
+      products: ["whey"],
+    },
+    {
+      id: "bundle",
+      label: { ka: "ნაკრებები", en: "Bundles" },
+      products: ["bundle"],
+    },
+  ],
+  vitamins: [
+    {
+      id: "daily",
+      label: { ka: "ვიტამინები", en: "Daily vitamins" },
+      products: ["d3k2", "bcomplex", "biotin"],
+    },
+    {
+      id: "minerals",
+      label: { ka: "მინერალები", en: "Minerals" },
+      products: ["zinc", "magcitrate", "magbis"],
+    },
+    {
+      id: "wellness",
+      label: { ka: "ჯანმრთელობა", en: "Wellness" },
+      products: ["berberine", "lionsmane", "ashwagandha"],
+    },
+    { id: "omega", label: { ka: "ომეგა", en: "Omega" }, products: ["omega3"] },
+  ],
+};
+
+const brands = [...new Set(products.map((product) => product.brand))].sort();
+
 export function App() {
   const [language, setLanguage] = useLocalStorage<Language>(
     "primelabs-language",
@@ -41,6 +90,8 @@ export function App() {
   );
   const [saved, setSaved] = useLocalStorage<string[]>("primelabs-saved", []);
   const [category, setCategory] = useState<Category>("all");
+  const [subcategory, setSubcategory] = useState("all");
+  const [brand, setBrand] = useState("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("featured");
   const [savedOnly, setSavedOnly] = useState(false);
@@ -63,6 +114,12 @@ export function App() {
       .filter(
         (p) =>
           (term !== "" || category === "all" || p.category === category) &&
+          (term !== "" ||
+            subcategory === "all" ||
+            subcategories[category]
+              ?.find((item) => item.id === subcategory)
+              ?.products.includes(p.id)) &&
+          (term !== "" || brand === "all" || p.brand === brand) &&
           (!savedOnly || saved.includes(p.id)) &&
           `${p.brand} ${p.name} ${p.subtitle} ${productSearchText(p.id)}`
             .toLocaleLowerCase()
@@ -75,9 +132,11 @@ export function App() {
             ? b.price - a.price
             : 0,
       );
-  }, [category, query, sort, savedOnly, saved]);
+  }, [category, subcategory, brand, query, sort, savedOnly, saved]);
   const filter = (id: Category) => {
     setCategory(id);
+    setSubcategory("all");
+    setBrand("all");
     setSavedOnly(false);
   };
   const changeQuery = (value: string) => {
@@ -88,6 +147,8 @@ export function App() {
   };
   const reset = () => {
     setCategory("all");
+    setSubcategory("all");
+    setBrand("all");
     setQuery("");
     setSearchHeight(0);
     setSavedOnly(false);
@@ -208,10 +269,59 @@ export function App() {
                 </button>
               ))}
             </div>
+            {subcategories[category]?.length ? (
+              <div className="subcategory-list" aria-label={t("subcategories")}>
+                <button
+                  className={subcategory === "all" ? "active" : ""}
+                  onClick={() => setSubcategory("all")}
+                >
+                  {t("all")}
+                </button>
+                {subcategories[category]?.map((item) => (
+                  <button
+                    key={item.id}
+                    className={subcategory === item.id ? "active" : ""}
+                    onClick={() => setSubcategory(item.id)}
+                  >
+                    {item.label[language]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            <div className="brand-filter" aria-label={t("brands")}>
+              <span>{t("brands")}</span>
+              <div className="brand-list">
+                <button
+                  className={brand === "all" ? "active" : ""}
+                  onClick={() => setBrand("all")}
+                  aria-pressed={brand === "all"}
+                >
+                  {t("allBrands")}
+                </button>
+                {brands.map((item) => (
+                  <button
+                    key={item}
+                    className={brand === item ? "active" : ""}
+                    onClick={() => setBrand(item)}
+                    aria-pressed={brand === item}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="sort">
-              <span className="result-count">
-                {visible.length} {t("count")}
-              </span>
+              <div className="filter-summary">
+                <span className="result-count">
+                  {visible.length} {t("count")}
+                </span>
+                {(category !== "all" ||
+                  subcategory !== "all" ||
+                  brand !== "all" ||
+                  sort !== "featured") && (
+                  <button onClick={reset}>{t("reset")}</button>
+                )}
+              </div>
               <label>
                 <span>{t("sort")}</span>
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>

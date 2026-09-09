@@ -1359,6 +1359,174 @@ footer {
   color: var(--ink);
 }
 
+/* Catalog navigation hierarchy */
+.catalog-tools {
+  margin: 0 0 16px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.category-list {
+  width: 100%;
+  margin: 0;
+  padding: 0 0 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 7px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.category-list::-webkit-scrollbar {
+  display: none;
+}
+.category {
+  width: auto;
+  height: 44px;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  padding: 5px 11px 5px 5px;
+  gap: 7px;
+  border-radius: 999px;
+}
+.category > span {
+  width: 32px;
+  height: 32px;
+}
+.category b {
+  overflow: visible;
+  font-size: 11px;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+.category small {
+  margin-left: 1px;
+}
+.subcategory-list {
+  margin: 0;
+  padding: 9px 0;
+  border-top: 1px solid var(--line);
+}
+.brand-filter {
+  padding: 9px 0;
+  display: grid;
+  gap: 7px;
+  border-top: 1px solid var(--line);
+}
+.brand-filter > span {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.brand-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.brand-list::-webkit-scrollbar {
+  display: none;
+}
+.brand-list button {
+  min-height: 32px;
+  padding: 0 11px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--canvas);
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.brand-list button.active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, var(--surface));
+  color: var(--brand-deep);
+}
+.sort {
+  min-height: 46px;
+  margin: 0;
+  padding: 9px 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+}
+.subcategory-list + .sort {
+  padding-top: 9px;
+}
+.filter-summary {
+  grid-column: 1 / -1;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-summary .result-count {
+  margin-right: 0;
+}
+.filter-summary button {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--brand-deep);
+  font-size: 8px;
+  font-weight: 750;
+}
+.sort label {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 8px;
+}
+.sort label:last-child {
+  justify-self: end;
+}
+.sort select {
+  width: 100%;
+  max-width: 170px;
+  height: 35px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-size: 9px;
+}
+
+@media (min-width: 640px) {
+  .catalog-tools {
+    padding: 13px;
+  }
+  .category {
+    height: 48px;
+    padding-right: 13px;
+  }
+  .category > span {
+    width: 36px;
+    height: 36px;
+  }
+  .sort {
+    grid-template-columns: minmax(150px, 1fr) minmax(150px, 190px);
+    align-items: end;
+  }
+  .brand-filter {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+  .filter-summary {
+    grid-column: auto;
+    min-height: 35px;
+  }
+}
+
 /* Refined desktop composition and in-app product details. */
 .product-open-media {
   width: 100%;
@@ -2840,6 +3008,61 @@ footer {
 .sort {
   align-items: center;
   gap: 14px;
+}
+.subcategory-list {
+  display: flex;
+  gap: 6px;
+  margin: -2px 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subcategory-list::-webkit-scrollbar {
+  display: none;
+}
+.subcategory-list button {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+.subcategory-list button.active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 9%, var(--surface));
+  color: var(--brand-deep);
+}
+.contact-hours {
+  min-height: 48px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  color: var(--text);
+  font-size: 11px;
+}
+.contact-hours > svg {
+  width: 17px;
+  flex: none;
+  color: var(--brand-deep);
+}
+.contact-hours span {
+  display: grid;
+  gap: 2px;
+}
+.contact-hours b {
+  color: var(--ink);
+}
+.footer-address {
+  max-width: 190px;
+  margin-top: 5px;
+  line-height: 1.45;
 }
 .contact-dialog .dialog-scroll {
   padding: 56px 24px 28px;
