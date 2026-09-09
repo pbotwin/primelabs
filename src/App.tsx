@@ -92,6 +92,8 @@ export function App() {
   const [category, setCategory] = useState<Category>("all");
   const [subcategory, setSubcategory] = useState("all");
   const [brand, setBrand] = useState("all");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("featured");
   const [savedOnly, setSavedOnly] = useState(false);
@@ -110,6 +112,8 @@ export function App() {
   const t = (key: CopyKey) => copy[language][key];
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase();
+    const minimum = minPrice === "" ? 0 : Number(minPrice);
+    const maximum = maxPrice === "" ? Infinity : Number(maxPrice);
     return products
       .filter(
         (p) =>
@@ -120,6 +124,8 @@ export function App() {
               ?.find((item) => item.id === subcategory)
               ?.products.includes(p.id)) &&
           (term !== "" || brand === "all" || p.brand === brand) &&
+          p.price >= minimum &&
+          p.price <= maximum &&
           (!savedOnly || saved.includes(p.id)) &&
           `${p.brand} ${p.name} ${p.subtitle} ${productSearchText(p.id)}`
             .toLocaleLowerCase()
@@ -132,7 +138,17 @@ export function App() {
             ? b.price - a.price
             : 0,
       );
-  }, [category, subcategory, brand, query, sort, savedOnly, saved]);
+  }, [
+    category,
+    subcategory,
+    brand,
+    minPrice,
+    maxPrice,
+    query,
+    sort,
+    savedOnly,
+    saved,
+  ]);
   const filter = (id: Category) => {
     setCategory(id);
     setSubcategory("all");
@@ -149,6 +165,8 @@ export function App() {
     setCategory("all");
     setSubcategory("all");
     setBrand("all");
+    setMinPrice("");
+    setMaxPrice("");
     setQuery("");
     setSearchHeight(0);
     setSavedOnly(false);
@@ -311,6 +329,36 @@ export function App() {
               </div>
             </div>
             <div className="sort">
+              <div className="price-filter">
+                <span>{t("price")}</span>
+                <div className="price-fields">
+                  <label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      placeholder="0"
+                      value={minPrice}
+                      onChange={(event) => setMinPrice(event.target.value)}
+                      aria-label={`${t("price")} ${t("priceFrom")}`}
+                    />
+                    <b>₾</b>
+                  </label>
+                  <i>–</i>
+                  <label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      placeholder="350"
+                      value={maxPrice}
+                      onChange={(event) => setMaxPrice(event.target.value)}
+                      aria-label={`${t("price")} ${t("priceTo")}`}
+                    />
+                    <b>₾</b>
+                  </label>
+                </div>
+              </div>
               <div className="filter-summary">
                 <span className="result-count">
                   {visible.length} {t("count")}
@@ -318,6 +366,8 @@ export function App() {
                 {(category !== "all" ||
                   subcategory !== "all" ||
                   brand !== "all" ||
+                  minPrice !== "" ||
+                  maxPrice !== "" ||
                   sort !== "featured") && (
                   <button onClick={reset}>{t("reset")}</button>
                 )}

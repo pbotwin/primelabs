@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ChevronRight,
-  Grid2X2,
   Heart,
   Mail,
   Menu,
@@ -198,13 +197,6 @@ export function Header({
         )}
         {menuOpen && (
           <nav className="shell mobile-menu-panel" aria-label={t("menu")}>
-            <a href="#categories" onClick={closeMenu}>
-              <span>
-                <Grid2X2 />
-              </span>
-              <b>{t("products")}</b>
-              <ChevronRight />
-            </a>
             <button
               type="button"
               onClick={() => {
