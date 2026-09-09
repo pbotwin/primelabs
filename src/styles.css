@@ -1262,24 +1262,30 @@ img {
   flex-direction: column;
 }
 .card-meta {
-  min-height: 18px;
-  margin-top: 7px;
+  min-height: 24px;
+  margin-top: 9px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: var(--muted);
-  font-size: 8px;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: var(--ink);
+  font-size: 9px;
+  font-weight: 700;
 }
 .card-meta span {
   min-width: 0;
+  min-height: 23px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   gap: 4px;
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 6%, var(--surface));
   white-space: nowrap;
 }
 .card-meta span + span {
-  padding-left: 7px;
-  border-left: 1px solid var(--line);
+  padding-left: 8px;
 }
 .card-meta i {
   width: 6px;
@@ -1331,7 +1337,13 @@ img {
 }
 .pagination button:hover:not(:disabled) {
   border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, var(--surface));
   color: var(--brand-deep);
+}
+.pagination button.active:hover {
+  border-color: var(--brand-deep);
+  background: var(--brand-deep);
+  color: #fff;
 }
 .pagination button.active {
   border-color: var(--brand-deep);
@@ -1349,8 +1361,8 @@ img {
   .card-meta {
     gap: 5px;
   }
-  .card-meta span + span {
-    padding-left: 5px;
+  .card-meta span {
+    padding-inline: 7px;
   }
   .pagination {
     margin: 20px 0 0;

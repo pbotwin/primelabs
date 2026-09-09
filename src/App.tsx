@@ -255,9 +255,16 @@ export function App() {
   );
   const pageCount = Math.max(1, Math.ceil(visible.length / 20));
   const currentPage = Math.min(page, pageCount);
+  const productsPerPage = Math.floor(visible.length / pageCount);
+  const largerPages = visible.length % pageCount;
+  const pageStart =
+    (currentPage - 1) * productsPerPage +
+    Math.min(currentPage - 1, largerPages);
+  const currentPageSize =
+    productsPerPage + (currentPage <= largerPages ? 1 : 0);
   const paginatedProducts = visible.slice(
-    (currentPage - 1) * 20,
-    currentPage * 20,
+    pageStart,
+    pageStart + currentPageSize,
   );
   return (
     <div
