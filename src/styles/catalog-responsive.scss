@@ -58,19 +58,31 @@
     min-width: 0;
     display: block;
   }
+  /* Each arrow is an edge cap: a full-height wash of the panel surface that
+     chips scroll under, with the chevron sitting on the clean part. Nothing
+     overlaps live content, so the cue reads without any button chrome. */
   .horizontal-scroller__control {
     position: absolute;
     z-index: 4;
-    top: 9px;
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    border: 1px solid color-mix(in srgb, var(--brand) 48%, var(--line));
-    border-radius: 10px;
-    background: var(--surface);
+    top: 0;
+    bottom: 0;
+    width: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    border: 0;
+    background: none;
     color: var(--brand-deep);
-    box-shadow: 0 4px 12px rgba(43, 20, 47, 0.18);
+    transition: color 0.15s ease;
+  }
+  .horizontal-scroller__control::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .horizontal-scroller__control:active {
+    color: var(--brand);
   }
   .horizontal-scroller__control[hidden] {
     display: none;
@@ -78,21 +90,31 @@
   .horizontal-scroller__control svg {
     width: 17px;
     height: 17px;
-    stroke-width: 2.2;
+    stroke-width: 2;
   }
   .horizontal-scroller__control--previous {
-    left: 6px;
+    left: 0;
+    justify-content: flex-start;
+  }
+  .horizontal-scroller__control--previous::before {
+    background: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--surface) 74%, transparent) 0,
+      color-mix(in srgb, var(--surface) 46%, transparent) 45%,
+      transparent 100%
+    );
   }
   .horizontal-scroller__control--next {
-    right: 6px;
+    right: 0;
+    justify-content: flex-end;
   }
-  .horizontal-scroller:has(.subcategory-list) .horizontal-scroller__control,
-  .horizontal-scroller:has(.catalog-filter__brand-list)
-    .horizontal-scroller__control {
-    top: 3px;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+  .horizontal-scroller__control--next::before {
+    background: linear-gradient(
+      to left,
+      color-mix(in srgb, var(--surface) 74%, transparent) 0,
+      color-mix(in srgb, var(--surface) 46%, transparent) 45%,
+      transparent 100%
+    );
   }
   .catalog-filter__actions {
     display: contents;
