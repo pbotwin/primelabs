@@ -11,7 +11,8 @@ main {
   box-shadow: 0 5px 20px rgba(43, 20, 47, 0.045);
   backdrop-filter: blur(18px);
 }
-.site-header::after {
+.site-header::after,
+.shop-header::after {
   content: "";
   position: absolute;
   inset: auto 0 -1px;
@@ -106,7 +107,8 @@ main {
   .site-header__row {
     height: 62px;
   }
-  .site-header::after {
+  .site-header::after,
+  .shop-header::after {
     opacity: 0.32;
   }
   .featured__slide {

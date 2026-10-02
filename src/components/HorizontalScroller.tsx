@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useDragScroll } from "../hooks/useDragScroll";
 
 type HorizontalScrollerProps = {
   children: ReactNode;
@@ -17,6 +18,7 @@ export function HorizontalScroller({
   nextLabel,
 }: HorizontalScrollerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  useDragScroll(contentRef);
   const [availableDirection, setAvailableDirection] = useState({
     previous: false,
     next: false,

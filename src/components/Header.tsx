@@ -1,30 +1,38 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  ChevronRight,
+  ArrowRight,
+  ChevronDown,
   Heart,
-  Mail,
-  Menu,
-  MessageCircle,
+  LayoutGrid,
+  Phone,
   Search,
   ShoppingBag,
   X,
 } from "lucide-react";
-import type { CopyKey } from "../data/translations";
-import type { Language, Product } from "../types";
+import { STORE } from "../config/store";
+import type { Category, Language, Product } from "../types";
+import { CategoryVisual, type CategoryItem } from "./CategoryNav";
 import { IconButton } from "./IconButton";
 
 interface Props {
   language: Language;
   onLanguage: () => void;
-  t: (key: CopyKey) => string;
+  t: (key: string) => string;
   savedCount: number;
   savedOpen: boolean;
   onSaved: () => void;
   cartCount: number;
   onCart: () => void;
+  onCatalog: () => void;
+  categories: CategoryItem[];
+  categoryCounts: Record<string, number>;
+  onCategory: (id: Category, subcategory?: string) => void;
+  subcategoryLinks: Partial<Record<Category, { id: string }[]>>;
   onContact: () => void;
   onNewsletter: () => void;
   onHome: () => void;
+  searchOpen: boolean;
+  onSearchOpen: (open: boolean) => void;
   query: string;
   onQuery: (value: string) => void;
   searchResults: Product[];
@@ -39,19 +47,54 @@ export function Header({
   onSaved,
   cartCount,
   onCart,
+  onCatalog,
+  categories,
+  categoryCounts,
+  onCategory,
+  subcategoryLinks,
   onContact,
   onNewsletter,
   onHome,
+  searchOpen,
+  onSearchOpen,
   query,
   onQuery,
   searchResults,
   onSearchProduct,
 }: Props) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [stuck, setStuck] = useState(false);
-  const searchPanelRef = useRef<HTMLDivElement>(null);
-  const searchToggleRef = useRef<HTMLSpanElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeMenu = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        !menuRef.current?.contains(target) &&
+        !menuButtonRef.current?.contains(target)
+      )
+        setMenuOpen(false);
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", closeMenu);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenu);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, [menuOpen]);
+  const chooseCategory = (id: Category, subcategory?: string) => {
+    setMenuOpen(false);
+    onCategory(id, subcategory);
+  };
   useEffect(() => {
     const update = () => setStuck(scrollY > 8);
     update();
@@ -63,20 +106,22 @@ export function Header({
   }, [language]);
   useEffect(() => {
     if (!searchOpen) return;
+    searchInputRef.current?.focus();
     const closeSearch = (event: PointerEvent) => {
       const target = event.target as Node;
       if (
-        !searchPanelRef.current?.contains(target) &&
-        !searchToggleRef.current?.contains(target)
+        !searchRef.current?.contains(target) &&
+        !searchButtonRef.current?.contains(target)
       ) {
-        setSearchOpen(false);
+        onSearchOpen(false);
         onQuery("");
       }
     };
     const closeWithEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setSearchOpen(false);
+        onSearchOpen(false);
         onQuery("");
+        searchButtonRef.current?.focus();
       }
     };
     document.addEventListener("pointerdown", closeSearch);
@@ -85,77 +130,85 @@ export function Header({
       document.removeEventListener("pointerdown", closeSearch);
       document.removeEventListener("keydown", closeWithEscape);
     };
-  }, [onQuery, searchOpen]);
-  const goHome = () => {
-    setSearchOpen(false);
-    setMenuOpen(false);
-    onHome();
-  };
-  const closeMenu = () => setMenuOpen(false);
+  }, [onQuery, onSearchOpen, searchOpen]);
   return (
     <>
-      <div className="announcement">
-        ✦ {t("announcement")} <a href="#categories">{t("shop")} →</a>
-      </div>
-      <header
-        className={stuck ? "site-header site-header--stuck" : "site-header"}
-      >
-        <div className="shell site-header__row">
-          <IconButton
-            label={t("menu")}
-            className="site-header__menu-toggle"
-            onClick={() => {
-              setMenuOpen((open) => !open);
-              setSearchOpen(false);
-              onQuery("");
-            }}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X /> : <Menu />}
-          </IconButton>
-          <a
-            href="#top"
-            className="site-header__logo"
-            aria-label="PrimeLabs"
-            onClick={goHome}
-          >
-            <img src="./logo-ink.svg" alt="PrimeLabs" />
-          </a>
-          <nav className="site-header__nav" aria-label="Main navigation">
-            <a href="#categories">{t("products")}</a>
+      <div className="top-bar">
+        <div className="shell top-bar__row">
+          <p>✦ {t("announcement")}</p>
+          <nav aria-label={t("company")}>
+            <a href={STORE.phoneHref}>
+              <Phone /> {STORE.phoneDisplay}
+            </a>
             <button onClick={onNewsletter}>
               {language === "ka" ? "სიახლეები" : "Newsletter"}
             </button>
             <button onClick={onContact}>{t("contact")}</button>
           </nav>
-          <div className="site-header__actions">
-            <button className="site-header__language" onClick={onLanguage}>
+        </div>
+      </div>
+      <header
+        className={stuck ? "shop-header shop-header--stuck" : "shop-header"}
+      >
+        <div className="shell shop-header__row">
+          <a
+            href="#top"
+            className="shop-header__logo"
+            aria-label="PrimeLabs"
+            onClick={onHome}
+          >
+            <img src="./logo-ink.svg" alt="PrimeLabs" />
+          </a>
+          <button
+            ref={menuButtonRef}
+            className="shop-header__catalog"
+            onClick={() => {
+              onSearchOpen(false);
+              onQuery("");
+              setMenuOpen((open) => !open);
+            }}
+            aria-expanded={menuOpen}
+            aria-controls="catalog-menu"
+          >
+            {menuOpen ? <X /> : <LayoutGrid />}
+            <span>{t("catalogButton")}</span>
+            <ChevronDown className="shop-header__catalog-chevron" />
+          </button>
+          <div className="shop-header__actions">
+            <button className="shop-header__language" onClick={onLanguage}>
               {t("language")}
             </button>
-            <span ref={searchToggleRef} className="site-header__search-toggle">
-              <IconButton
-                label={t("searchLabel")}
-                onClick={() => {
-                  if (searchOpen) onQuery("");
-                  setSearchOpen((v) => !v);
-                  setMenuOpen(false);
-                }}
-                aria-expanded={searchOpen}
-              >
-                {searchOpen ? <X /> : <Search />}
-              </IconButton>
-            </span>
+            <button
+              ref={searchButtonRef}
+              id="header-search-toggle"
+              className="shop-header__search-toggle"
+              aria-label={t("searchLabel")}
+              aria-expanded={searchOpen}
+              aria-controls="header-search-panel"
+              onClick={() => {
+                setMenuOpen(false);
+                onSearchOpen(!searchOpen);
+                if (searchOpen) onQuery("");
+              }}
+            >
+              {searchOpen ? <X /> : <Search />}
+              <span>{t("searchLabel")}</span>
+            </button>
             <IconButton
               label={t("saved")}
               count={savedCount}
-              className={savedOpen ? "icon-button--selected" : ""}
+              className={
+                savedOpen
+                  ? "shop-header__saved icon-button--selected"
+                  : "shop-header__saved"
+              }
               onClick={onSaved}
               aria-pressed={savedOpen}
             >
               <Heart fill={savedOpen ? "currentColor" : "none"} />
             </IconButton>
             <button
-              className="site-header__bag"
+              className="shop-header__cart"
               onClick={onCart}
               aria-label={t("cart")}
             >
@@ -166,14 +219,20 @@ export function Header({
           </div>
         </div>
         {searchOpen && (
-          <div ref={searchPanelRef} className="shell site-header__search">
-            <Search />
+          <div
+            ref={searchRef}
+            id="header-search-panel"
+            className="shell shop-header__search-panel"
+          >
+            <Search aria-hidden="true" />
             <input
-              autoFocus
+              ref={searchInputRef}
+              id="site-search"
               type="text"
               inputMode="search"
+              autoComplete="off"
               value={query}
-              onChange={(e) => onQuery(e.target.value)}
+              onChange={(event) => onQuery(event.target.value)}
               placeholder={t("search")}
               aria-label={t("search")}
             />
@@ -190,7 +249,7 @@ export function Header({
                       key={product.id}
                       type="button"
                       onClick={() => {
-                        setSearchOpen(false);
+                        onSearchOpen(false);
                         onQuery("");
                         onSearchProduct(product);
                       }}
@@ -211,37 +270,68 @@ export function Header({
           </div>
         )}
         {menuOpen && (
-          <nav
-            className="shell site-header__mobile-menu"
-            aria-label={t("menu")}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                closeMenu();
-                onNewsletter();
-              }}
-            >
-              <span>
-                <Mail />
-              </span>
-              <b>{language === "ka" ? "სიახლეები" : "Newsletter"}</b>
-              <ChevronRight />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                closeMenu();
-                onContact();
-              }}
-            >
-              <span>
-                <MessageCircle />
-              </span>
-              <b>{t("contact")}</b>
-              <ChevronRight />
-            </button>
-          </nav>
+          <div ref={menuRef} id="catalog-menu" className="catalog-menu">
+            <div className="shell catalog-menu__inner">
+              <div className="catalog-menu__heading">
+                <h2>{t("categories")}</h2>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onCatalog();
+                  }}
+                >
+                  {t("allProducts")} <ArrowRight />
+                </button>
+              </div>
+              <div className="catalog-menu__grid">
+                {categories
+                  .filter((item) => item.id !== "all")
+                  .map((item) => {
+                    const subs = subcategoryLinks[item.id] ?? [];
+                    return (
+                      <div key={item.id} className="catalog-menu__group">
+                        <button onClick={() => chooseCategory(item.id)}>
+                          <span className="catalog-menu__visual">
+                            <CategoryVisual item={item} />
+                          </span>
+                          <span>
+                            <b>{t(item.id)}</b>
+                            <small>
+                              {categoryCounts[item.id]} {t("count")}
+                            </small>
+                          </span>
+                        </button>
+                        {subs.length > 0 && (
+                          <ul>
+                            {subs.slice(0, 4).map((sub) => (
+                              <li key={sub.id}>
+                                <button
+                                  onClick={() =>
+                                    chooseCategory(item.id, sub.id)
+                                  }
+                                >
+                                  {t(sub.id)}
+                                </button>
+                              </li>
+                            ))}
+                            {subs.length > 4 && (
+                              <li>
+                                <button
+                                  className="catalog-menu__more"
+                                  onClick={() => chooseCategory(item.id)}
+                                >
+                                  +{subs.length - 4} {t("viewAll")}
+                                </button>
+                              </li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
         )}
       </header>
     </>

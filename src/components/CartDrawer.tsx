@@ -36,7 +36,13 @@ export function CartDrawer({
   const [step, setStep] = useState<"bag" | "checkout" | "done">("bag");
   const [city, setCity] = useState("");
   const [cityError, setCityError] = useState(false);
-  const dialogRef = useModalDialog(open, onClose);
+  const close = () => {
+    onClose();
+    setStep("bag");
+    setCity("");
+    setCityError(false);
+  };
+  const dialogRef = useModalDialog(open, close);
   if (!open) return null;
   const u = uiCopy[language];
   const total = items.reduce(
@@ -70,12 +76,6 @@ export function CartDrawer({
     );
     onComplete();
     setStep("done");
-  };
-  const close = () => {
-    onClose();
-    setStep("bag");
-    setCity("");
-    setCityError(false);
   };
   return (
     <div

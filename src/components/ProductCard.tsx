@@ -1,4 +1,4 @@
-import { Check, Heart, Plus } from "lucide-react";
+import { Check, Heart, ShoppingBag } from "lucide-react";
 import { STORE } from "../config/store";
 import type { Product } from "../types";
 interface Props {
@@ -61,11 +61,15 @@ export function ProductCard({
         </button>
       </div>
       <div className="product-card__content">
-        <p className="product-card__brand">{product.brand}</p>
+        <div className="product-card__price">
+          {product.from && <small>{t("from")}</small>}
+          <strong>{product.price.toFixed(2)} ₾</strong>
+          {!!product.previousPrice && (
+            <del>{product.previousPrice.toFixed(2)} ₾</del>
+          )}
+        </div>
         <h3>{product.name}</h3>
-        <p className="product-card__subtitle">
-          {product.variants.length ? t(product.category) : product.subtitle}
-        </p>
+        <p className="product-card__brand">{product.brand}</p>
         <div className="product-card__meta">
           <span
             className={
@@ -82,27 +86,18 @@ export function ProductCard({
             </span>
           )}
         </div>
-        <div className="product-card__footer">
-          <div className="product-card__price">
-            {product.from && <small>{t("from")}</small>}
-            <strong>₾{product.price.toFixed(2)}</strong>
-            {product.previousPrice && (
-              <del>₾{product.previousPrice.toFixed(2)}</del>
-            )}
-          </div>
-          <button
-            className={
-              added
-                ? "product-card__buy product-card__buy--added"
-                : "product-card__buy"
-            }
-            onClick={onAdd}
-            aria-label={`${t("buy")}: ${product.name}`}
-          >
-            <span>{added ? t("added") : t("buy")}</span>
-            {added ? <Check /> : <Plus />}
-          </button>
-        </div>
+        <button
+          className={
+            added
+              ? "product-card__buy product-card__buy--added"
+              : "product-card__buy"
+          }
+          onClick={onAdd}
+          aria-label={`${t("buy")}: ${product.name}`}
+        >
+          {added ? <Check /> : <ShoppingBag />}
+          <span>{added ? t("added") : t("addToCart")}</span>
+        </button>
       </div>
     </article>
   );

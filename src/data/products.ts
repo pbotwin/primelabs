@@ -46,8 +46,7 @@ export const products: Product[] = [
     name: "Beef Protein + Creatine Bundle",
     category: "protein",
     categories: ["protein", "creatine"],
-    image:
-      "https://primelabs.ge/admin/storage/product_images/E7fDivIEtoX0UIBFLuK6S7PKsw1OvWxpD7ahcKBx.jpg",
+    image: "./bundle.jpg",
     slug: "beef-protein-creatine-bundle",
     subtitle: "Creatine",
     price: 130,

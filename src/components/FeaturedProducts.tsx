@@ -5,20 +5,19 @@ import type { Product } from "../types";
 
 type FeaturedProductsProps = {
   slides: Product[];
-  supportingProducts: [Product, Product];
   onOpenProduct: (product: Product) => void;
   t: (key: CopyKey) => string;
 };
 
 export function FeaturedProducts({
   slides,
-  supportingProducts,
   onOpenProduct,
   t,
 }: FeaturedProductsProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [paused, setPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
+  const swipeStartX = useRef<number | null>(null);
+  const swiped = useRef(false);
 
   useEffect(() => {
     if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -35,24 +34,36 @@ export function FeaturedProducts({
   const showNext = () => setActiveSlide((slide) => (slide + 1) % slides.length);
 
   return (
-    <section className="featured shell" aria-label={t("featuredProducts")}>
+    <section className="featured" aria-label={t("featuredProducts")}>
       <div
         className="featured__slider"
         aria-roledescription="carousel"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
-        onTouchStart={(event) => {
-          touchStartX.current = event.touches[0]?.clientX ?? null;
+        onPointerDown={(event) => {
+          if (event.pointerType === "mouse" && event.button !== 0) return;
+          swipeStartX.current = event.clientX;
+          swiped.current = false;
           setPaused(true);
         }}
-        onTouchEnd={(event) => {
-          const start = touchStartX.current;
-          const end = event.changedTouches[0]?.clientX;
-          if (start !== null && end !== undefined && Math.abs(start - end) > 45)
-            if (start > end) showNext();
-            else showPrevious();
-          touchStartX.current = null;
+        onPointerUp={(event) => {
+          const start = swipeStartX.current;
+          swipeStartX.current = null;
+          if (event.pointerType !== "mouse") setPaused(false);
+          if (start === null || Math.abs(start - event.clientX) <= 45) return;
+          swiped.current = true;
+          if (start > event.clientX) showNext();
+          else showPrevious();
+        }}
+        onPointerCancel={() => {
+          swipeStartX.current = null;
           setPaused(false);
+        }}
+        onClickCapture={(event) => {
+          if (!swiped.current) return;
+          swiped.current = false;
+          event.preventDefault();
+          event.stopPropagation();
         }}
       >
         {slides.map((product, index) => {
@@ -80,7 +91,7 @@ export function FeaturedProducts({
                 <p>
                   {product.from && <small>{t("from")}</small>}
                   <strong>₾{product.price.toFixed(2)}</strong>
-                  {product.previousPrice && (
+                  {!!product.previousPrice && (
                     <del>₾{product.previousPrice.toFixed(2)}</del>
                   )}
                 </p>
@@ -127,19 +138,6 @@ export function FeaturedProducts({
         <span className="sr-only" aria-live="polite">
           {t("slide")} {activeSlide + 1} / {slides.length}
         </span>
-      </div>
-      <div className="featured__supporting">
-        {supportingProducts.map((product) => (
-          <button key={product.id} onClick={() => onOpenProduct(product)}>
-            <img src={product.image} alt={`${product.brand} ${product.name}`} />
-            <div>
-              <span>{product.badge ? t(product.badge) : product.brand}</span>
-              <h2>{product.name}</h2>
-              <strong>₾{product.price.toFixed(2)}</strong>
-            </div>
-            <ArrowRight />
-          </button>
-        ))}
       </div>
     </section>
   );

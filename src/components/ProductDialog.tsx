@@ -85,7 +85,7 @@ export function ProductDialog({
             <p className="dialog-subtitle">{product.subtitle}</p>
             <div className="dialog-price">
               <strong>₾{displayPrice.toFixed(2)}</strong>
-              {displayPreviousPrice && (
+              {!!displayPreviousPrice && (
                 <del>₾{displayPreviousPrice.toFixed(2)}</del>
               )}
             </div>
