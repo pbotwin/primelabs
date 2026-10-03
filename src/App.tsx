@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   ChevronRight,
@@ -113,23 +113,73 @@ const EMPTY_PRODUCT_IDS: string[] = [];
 
 /* Hash routes keep the static GitHub Pages build working: "#/catalog" opens
    the catalog, "#/catalog/protein" a category, and
-   "#/catalog/protein/whey" one of its subcategories. */
-type CatalogRoute = { category: Category; subcategory: string };
-const catalogRoute = (): CatalogRoute | null => {
-  const match = /^#\/catalog(?:\/([\w-]+))?(?:\/([\w-]+))?/.exec(
-    window.location.hash,
-  );
-  if (!match) return null;
-  const category = categories.some((item) => item.id === match[1])
-    ? match[1]
-    : "all";
-  const subcategory = subcategories[category]?.some(
-    (item) => item.id === match[2],
-  )
-    ? match[2]
-    : "all";
-  return { category, subcategory };
+   "#/catalog/protein/whey" one of its subcategories. Filters, the page, and
+   an open product live in the query, e.g.
+   "#/catalog/protein?brand=Optimum&sort=low&page=2&product=12". */
+type Route = {
+  view: "home" | "catalog";
+  category: Category;
+  subcategory: string;
+  brand: string;
+  minPrice: string;
+  maxPrice: string;
+  query: string;
+  sort: CatalogSort;
+  page: number;
+  product: string | null;
 };
+const sorts: CatalogSort[] = ["featured", "low", "high"];
+const priceParam = (value: string | null) =>
+  value && /^\d+(\.\d+)?$/.test(value) ? value : "";
+const parseRoute = (hash = window.location.hash): Route => {
+  const [path, search = ""] = hash.replace(/^#/, "").split("?");
+  const params = new URLSearchParams(search);
+  const match = /^\/catalog(?:\/([\w-]+))?(?:\/([\w-]+))?\/?$/.exec(path);
+  const category =
+    match && categories.some((item) => item.id === match[1]) ? match[1] : "all";
+  const subcategory =
+    match && subcategories[category]?.some((item) => item.id === match[2])
+      ? match[2]
+      : "all";
+  const brand = params.get("brand") ?? "";
+  const sort = params.get("sort") as CatalogSort;
+  const product = params.get("product");
+  return {
+    view: match ? "catalog" : "home",
+    category,
+    subcategory,
+    brand: brands.includes(brand) ? brand : "all",
+    minPrice: priceParam(params.get("min")),
+    maxPrice: priceParam(params.get("max")),
+    query: params.get("q") ?? "",
+    sort: sorts.includes(sort) ? sort : "featured",
+    page: Math.max(1, Number.parseInt(params.get("page") ?? "", 10) || 1),
+    product: products.some((item) => item.id === product) ? product : null,
+  };
+};
+const routeHash = (route: Route) => {
+  const params = new URLSearchParams();
+  if (route.view === "catalog") {
+    if (route.brand !== "all") params.set("brand", route.brand);
+    if (route.minPrice) params.set("min", route.minPrice);
+    if (route.maxPrice) params.set("max", route.maxPrice);
+    if (route.query) params.set("q", route.query);
+    if (route.sort !== "featured") params.set("sort", route.sort);
+    if (route.page > 1) params.set("page", String(route.page));
+  }
+  if (route.product) params.set("product", route.product);
+  const path =
+    route.view === "home"
+      ? "#/"
+      : catalogHash(route.category, route.subcategory);
+  const search = params.toString();
+  return search ? `${path}?${search}` : path;
+};
+/* Changes to these push a history entry; filter edits only replace one. */
+const navigationKey = (route: Route) =>
+  [route.view, route.category, route.subcategory, route.page, route.product]
+    .map(String)
+    .join("|");
 /* First, last, and the pages around the current one; gaps become "…". */
 const visiblePages = (current: number, count: number) => {
   const pages = [...new Set([1, current - 1, current, current + 1, count])]
@@ -141,12 +191,13 @@ const visiblePages = (current: number, count: number) => {
       : ([page] as const),
   );
 };
-const catalogHash = (category: Category, subcategory = "all") =>
-  category === "all"
+function catalogHash(category: Category, subcategory = "all") {
+  return category === "all"
     ? "#/catalog"
     : subcategory === "all"
       ? `#/catalog/${category}`
       : `#/catalog/${category}/${subcategory}`;
+}
 const EMPTY_CART: Record<string, number> = {};
 
 export function App() {
@@ -160,26 +211,24 @@ export function App() {
     EMPTY_PRODUCT_IDS,
     isStringArray,
   );
-  const [view, setView] = useState<"home" | "catalog">(() =>
-    catalogRoute() ? "catalog" : "home",
-  );
-  const [category, setCategory] = useState<Category>(
-    () => catalogRoute()?.category ?? "all",
-  );
-  const [subcategory, setSubcategory] = useState(
-    () => catalogRoute()?.subcategory ?? "all",
-  );
-  const [brand, setBrand] = useState("all");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [catalogQuery, setCatalogQuery] = useState("");
+  const [initialRoute] = useState(parseRoute);
+  const [view, setView] = useState(initialRoute.view);
+  const [category, setCategory] = useState<Category>(initialRoute.category);
+  const [subcategory, setSubcategory] = useState(initialRoute.subcategory);
+  const [brand, setBrand] = useState(initialRoute.brand);
+  const [minPrice, setMinPrice] = useState(initialRoute.minPrice);
+  const [maxPrice, setMaxPrice] = useState(initialRoute.maxPrice);
+  const [catalogQuery, setCatalogQuery] = useState(initialRoute.query);
   const [headerQuery, setHeaderQuery] = useState("");
   const [headerSearchOpen, setHeaderSearchOpen] = useState(false);
-  const [sort, setSort] = useState<CatalogSort>("featured");
+  const [sort, setSort] = useState<CatalogSort>(initialRoute.sort);
   const [savedOpen, setSavedOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[number] | null
-  >(null);
+  >(
+    () =>
+      products.find((product) => product.id === initialRoute.product) ?? null,
+  );
   const [cart, setCart] = useLocalStorage<Record<string, number>>(
     "primelabs-cart",
     EMPTY_CART,
@@ -190,7 +239,7 @@ export function App() {
   const [newsletterOpen, setNewsletterOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [addedProductId, setAddedProductId] = useState("");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialRoute.page);
   const [recent, setRecent] = useLocalStorage<string[]>(
     "primelabs-recent",
     EMPTY_PRODUCT_IDS,
@@ -276,8 +325,22 @@ export function App() {
   const addToCart = (id: string, variant?: ProductVariant) => {
     const key = variant ? `${id}::${variant.id}` : id;
     setCart((items) => ({ ...items, [key]: (items[key] ?? 0) + 1 }));
-    setSelectedProduct(null);
+    closeProduct();
     setCartOpen(true);
+  };
+  /* A product opened in this session goes back to the page underneath; one
+     opened from a shared link is dropped from the URL instead. */
+  const closeProduct = () => {
+    if (
+      selectedProduct &&
+      (window.history.state as { product?: string } | null)?.product ===
+        selectedProduct.id
+    ) {
+      window.history.back();
+      return;
+    }
+    replaceNextRoute.current = true;
+    setSelectedProduct(null);
   };
   const quickAdd = (id: string) => {
     setCart((items) => ({ ...items, [id]: (items[id] ?? 0) + 1 }));
@@ -295,8 +358,6 @@ export function App() {
     filter(id);
     setSubcategory(subcategoryId);
     setView("catalog");
-    const hash = catalogHash(id, subcategoryId);
-    if (window.location.hash !== hash) window.location.hash = hash;
     window.scrollTo({ top: 0 });
   };
   const goHome = () => {
@@ -304,28 +365,48 @@ export function App() {
     setHeaderQuery("");
     reset();
     setView("home");
-    if (catalogRoute()) window.location.hash = "#/";
     window.scrollTo({ top: 0 });
   };
+  const lastRoute = useRef(initialRoute);
+  const replaceNextRoute = useRef(false);
   useEffect(() => {
     const syncRoute = () => {
-      const route = catalogRoute();
-      setView(route ? "catalog" : "home");
-      if (!route) return;
-      setPage(1);
+      // In-page anchors such as "#about" are not routes.
+      if (window.location.hash && !window.location.hash.startsWith("#/"))
+        return;
+      const route = parseRoute();
+      const previous = lastRoute.current;
+      lastRoute.current = route;
+      setView(route.view);
       setCategory(route.category);
       setSubcategory(route.subcategory);
-      setBrand("all");
-      window.scrollTo({ top: 0 });
+      setBrand(route.brand);
+      setMinPrice(route.minPrice);
+      setMaxPrice(route.maxPrice);
+      setCatalogQuery(route.query);
+      setSort(route.sort);
+      setPage(route.page);
+      setSelectedProduct(
+        products.find((product) => product.id === route.product) ?? null,
+      );
+      if (
+        route.view !== previous.view ||
+        route.category !== previous.category ||
+        route.subcategory !== previous.subcategory ||
+        route.page !== previous.page
+      )
+        window.scrollTo({ top: 0 });
     };
-    window.addEventListener("hashchange", syncRoute);
-    return () => window.removeEventListener("hashchange", syncRoute);
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
   }, []);
   const addFromCard = (product: (typeof products)[number]) =>
     product.variants.length || !product.inStock
       ? openProduct(product)
       : quickAdd(product.id);
   const openProduct = (product: (typeof products)[number]) => {
+    // Switching between products in the dialog keeps one history entry.
+    if (selectedProduct) replaceNextRoute.current = true;
     setSelectedProduct(product);
     setRecent((items) =>
       [product.id, ...items.filter((id) => id !== product.id)].slice(0, 6),
@@ -371,12 +452,65 @@ export function App() {
     (currentPage - 1) * STORE.productsPerPage,
     currentPage * STORE.productsPerPage,
   );
+  const selectedProductId = selectedProduct?.id ?? null;
+  useEffect(() => {
+    const route: Route = {
+      view,
+      category,
+      subcategory,
+      brand,
+      minPrice,
+      maxPrice,
+      query: catalogQuery,
+      sort,
+      page: currentPage,
+      product: selectedProductId,
+    };
+    const hash = routeHash(route);
+    const push =
+      !replaceNextRoute.current &&
+      navigationKey(route) !== navigationKey(lastRoute.current);
+    replaceNextRoute.current = false;
+    lastRoute.current = route;
+    if (hash === (window.location.hash || "#/")) return;
+    const url =
+      hash === "#/" ? window.location.pathname + window.location.search : hash;
+    const state = route.product ? { product: route.product } : null;
+    if (push) window.history.pushState(state, "", url);
+    else window.history.replaceState(state, "", url);
+  }, [
+    view,
+    category,
+    subcategory,
+    brand,
+    minPrice,
+    maxPrice,
+    catalogQuery,
+    sort,
+    currentPage,
+    selectedProductId,
+  ]);
   return (
     <div
       id="top"
       lang={language}
       onDragStart={(event) => {
         if (event.target instanceof HTMLImageElement) event.preventDefault();
+      }}
+      onClick={(event) => {
+        // In-page anchors scroll without replacing the route in the hash.
+        const href =
+          event.target instanceof Element
+            ? event.target.closest("a")?.getAttribute("href")
+            : null;
+        if (event.defaultPrevented || !href?.startsWith("#")) return;
+        if (href.startsWith("#/")) return;
+        event.preventDefault();
+        if (href === "#top") window.scrollTo({ top: 0, behavior: "smooth" });
+        else
+          document
+            .getElementById(href.slice(1))
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
       }}
     >
       <a
@@ -776,7 +910,7 @@ export function App() {
         onAdd={(variant) =>
           selectedProduct && addToCart(selectedProduct.id, variant)
         }
-        onClose={() => setSelectedProduct(null)}
+        onClose={closeProduct}
         relatedProducts={
           selectedProduct
             ? products
