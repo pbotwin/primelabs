@@ -102,9 +102,7 @@ export function Header({
 
   // Phone/tablet page menu: full screen below the header
   const [navOpen, setNavOpen] = useState(false);
-  const [openNavCategory, setOpenNavCategory] = useState<Category | null>(
-    null,
-  );
+  const [openNavCategory, setOpenNavCategory] = useState<Category | null>(null);
   const [navTop, setNavTop] = useState(0);
   const headerRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
