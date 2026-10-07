@@ -12,6 +12,7 @@ import "./styles/product-dialog.scss";
 import "./styles/motion.scss";
 import "./styles/typography.scss";
 import "./styles/home.scss";
+import "./styles/refinements.scss";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root application element");

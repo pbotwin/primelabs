@@ -17,6 +17,13 @@ export interface Product {
   inStock: boolean;
   variants: ProductVariant[];
   subcategories: string[];
+  /* Extra choices made in the product dialog (e.g. flavour), if any. */
+  options?: ProductOption[];
+}
+export interface ProductOption {
+  name: string;
+  values: string[];
+  required?: boolean;
 }
 export interface ProductVariant {
   id: string;

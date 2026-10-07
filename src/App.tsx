@@ -22,11 +22,13 @@ import { ProductCard } from "./components/ProductCard";
 import { ProductDialog } from "./components/ProductDialog";
 import { ProductRail } from "./components/ProductRail";
 import { PromoCards } from "./components/PromoCards";
+import { AboutPage } from "./components/AboutPage";
 import { CartDrawer } from "./components/CartDrawer";
 import { ContactDialog } from "./components/ContactDialog";
 import { NewsletterDialog } from "./components/NewsletterDialog";
 import { SavedProductsDialog } from "./components/SavedProductsDialog";
 import { RecentlyViewed } from "./components/RecentlyViewed";
+import { SeoBlock } from "./components/SeoBlock";
 import { StoreBenefits } from "./components/StoreBenefits";
 import { SubcategoryChips } from "./components/SubcategoryChips";
 import { STORE } from "./config/store";
@@ -117,7 +119,7 @@ const EMPTY_PRODUCT_IDS: string[] = [];
    an open product live in the query, e.g.
    "#/catalog/protein?brand=Optimum&sort=low&page=2&product=12". */
 type Route = {
-  view: "home" | "catalog";
+  view: "home" | "catalog" | "about";
   category: Category;
   subcategory: string;
   brand: string;
@@ -125,10 +127,11 @@ type Route = {
   maxPrice: string;
   query: string;
   sort: CatalogSort;
+  variants: boolean;
   page: number;
   product: string | null;
 };
-const sorts: CatalogSort[] = ["featured", "low", "high"];
+const sorts: CatalogSort[] = ["featured", "low", "high", "name"];
 const priceParam = (value: string | null) =>
   value && /^\d+(\.\d+)?$/.test(value) ? value : "";
 const parseRoute = (hash = window.location.hash): Route => {
@@ -145,7 +148,7 @@ const parseRoute = (hash = window.location.hash): Route => {
   const sort = params.get("sort") as CatalogSort;
   const product = params.get("product");
   return {
-    view: match ? "catalog" : "home",
+    view: match ? "catalog" : /^\/about\/?$/.test(path) ? "about" : "home",
     category,
     subcategory,
     brand: brands.includes(brand) ? brand : "all",
@@ -153,6 +156,7 @@ const parseRoute = (hash = window.location.hash): Route => {
     maxPrice: priceParam(params.get("max")),
     query: params.get("q") ?? "",
     sort: sorts.includes(sort) ? sort : "featured",
+    variants: params.get("variants") === "1",
     page: Math.max(1, Number.parseInt(params.get("page") ?? "", 10) || 1),
     product: products.some((item) => item.id === product) ? product : null,
   };
@@ -165,13 +169,16 @@ const routeHash = (route: Route) => {
     if (route.maxPrice) params.set("max", route.maxPrice);
     if (route.query) params.set("q", route.query);
     if (route.sort !== "featured") params.set("sort", route.sort);
+    if (route.variants) params.set("variants", "1");
     if (route.page > 1) params.set("page", String(route.page));
   }
   if (route.product) params.set("product", route.product);
   const path =
     route.view === "home"
       ? "#/"
-      : catalogHash(route.category, route.subcategory);
+      : route.view === "about"
+        ? "#/about"
+        : catalogHash(route.category, route.subcategory);
   const search = params.toString();
   return search ? `${path}?${search}` : path;
 };
@@ -199,6 +206,17 @@ function catalogHash(category: Category, subcategory = "all") {
       : `#/catalog/${category}/${subcategory}`;
 }
 const EMPTY_CART: Record<string, number> = {};
+const readCartOptions = (encoded?: string) => {
+  if (!encoded) return undefined;
+  try {
+    const value: unknown = JSON.parse(decodeURIComponent(encoded));
+    return value && typeof value === "object"
+      ? (value as Record<string, string>)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 export function App() {
   const [language, setLanguage] = useLocalStorage<Language>(
@@ -222,6 +240,7 @@ export function App() {
   const [headerQuery, setHeaderQuery] = useState("");
   const [headerSearchOpen, setHeaderSearchOpen] = useState(false);
   const [sort, setSort] = useState<CatalogSort>(initialRoute.sort);
+  const [allVariants, setAllVariants] = useState(initialRoute.variants);
   const [savedOpen, setSavedOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[number] | null
@@ -259,7 +278,24 @@ export function App() {
     const activeSubcategory = subcategories[category]?.find(
       (item) => item.id === subcategory,
     );
-    return filterProducts(products, {
+    // Each variant as its own item: same product id, the variant's details.
+    const items = allVariants
+      ? products.flatMap((product) =>
+          product.variants.length
+            ? product.variants.map((variant) => ({
+                ...product,
+                name: `${product.name} - ${variant.name}`,
+                price: variant.price,
+                previousPrice: variant.previousPrice,
+                image: variant.image ?? product.image,
+                inStock: variant.inStock,
+                from: false,
+                variants: [variant],
+              }))
+            : [product],
+        )
+      : products;
+    return filterProducts(items, {
       category,
       subcategoryProductIds: activeSubcategory
         ? new Set(activeSubcategory.products)
@@ -270,7 +306,16 @@ export function App() {
       query: catalogQuery,
       sort,
     });
-  }, [category, subcategory, brand, minPrice, maxPrice, catalogQuery, sort]);
+  }, [
+    category,
+    subcategory,
+    brand,
+    minPrice,
+    maxPrice,
+    catalogQuery,
+    sort,
+    allVariants,
+  ]);
   const headerSearchResults = useMemo(
     () =>
       headerQuery
@@ -299,6 +344,7 @@ export function App() {
     setMaxPrice("");
     setCatalogQuery("");
     setSort("featured");
+    setAllVariants(false);
   };
   const reset = () => {
     setPage(1);
@@ -322,8 +368,17 @@ export function App() {
       else next[id] = quantity;
       return next;
     });
-  const addToCart = (id: string, variant?: ProductVariant) => {
-    const key = variant ? `${id}::${variant.id}` : id;
+  /* Cart keys: "id", "id::variant", or "id::variant::options" (encoded). */
+  const addToCart = (
+    id: string,
+    variant?: ProductVariant,
+    options?: Record<string, string>,
+  ) => {
+    const key = options
+      ? `${id}::${variant?.id ?? ""}::${encodeURIComponent(JSON.stringify(options))}`
+      : variant
+        ? `${id}::${variant.id}`
+        : id;
     setCart((items) => ({ ...items, [key]: (items[key] ?? 0) + 1 }));
     closeProduct();
     setCartOpen(true);
@@ -385,6 +440,7 @@ export function App() {
       setMaxPrice(route.maxPrice);
       setCatalogQuery(route.query);
       setSort(route.sort);
+      setAllVariants(route.variants);
       setPage(route.page);
       setSelectedProduct(
         products.find((product) => product.id === route.product) ?? null,
@@ -432,6 +488,7 @@ export function App() {
         variant: product.variants.find(
           (item) => item.id === key.split("::")[1],
         ),
+        options: readCartOptions(key.split("::")[2]),
       })),
   );
   const validSaved = saved.filter((id) =>
@@ -463,6 +520,7 @@ export function App() {
       maxPrice,
       query: catalogQuery,
       sort,
+      variants: allVariants,
       page: currentPage,
       product: selectedProductId,
     };
@@ -487,6 +545,7 @@ export function App() {
     maxPrice,
     catalogQuery,
     sort,
+    allVariants,
     currentPage,
     selectedProductId,
   ]);
@@ -564,6 +623,7 @@ export function App() {
               />
               <FeaturedProducts
                 slides={featuredSlides}
+                language={language}
                 onOpenProduct={openProduct}
                 t={t}
               />
@@ -619,7 +679,15 @@ export function App() {
               onQuickAdd={addFromCard}
               t={t}
             />
+            <SeoBlock />
           </>
+        ) : view === "about" ? (
+          <AboutPage
+            onHome={goHome}
+            onShop={() => openCatalog("all")}
+            onContact={() => setContactOpen(true)}
+            t={t}
+          />
         ) : (
           <section
             id="catalog"
@@ -724,13 +792,15 @@ export function App() {
                   }}
                   minPrice={minPrice}
                   maxPrice={maxPrice}
-                  onMinPrice={(value) => {
+                  onPrice={(minimum, maximum) => {
                     setPage(1);
-                    setMinPrice(value);
+                    setMinPrice(priceParam(minimum));
+                    setMaxPrice(priceParam(maximum));
                   }}
-                  onMaxPrice={(value) => {
+                  allVariants={allVariants}
+                  onAllVariants={(value) => {
                     setPage(1);
-                    setMaxPrice(value);
+                    setAllVariants(value);
                   }}
                   query={catalogQuery}
                   onQuery={(value) => {
@@ -751,7 +821,8 @@ export function App() {
                     minPrice !== "" ||
                     maxPrice !== "" ||
                     catalogQuery !== "" ||
-                    sort !== "featured") && (
+                    sort !== "featured" ||
+                    allVariants) && (
                     <button onClick={clearFilters}>{t("reset")}</button>
                   )}
                 </div>
@@ -788,18 +859,32 @@ export function App() {
                 <div id="product-grid-anchor">
                   {visible.length ? (
                     <div className="product-grid">
-                      {paginatedProducts.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          saved={saved.includes(product.id)}
-                          onSave={() => toggleSave(product.id)}
-                          onOpen={() => openProduct(product)}
-                          onAdd={() => addFromCard(product)}
-                          added={addedProductId === product.id}
-                          t={t}
-                        />
-                      ))}
+                      {paginatedProducts.map((item) => {
+                        const product =
+                          products.find((entry) => entry.id === item.id) ??
+                          item;
+                        const variant = allVariants
+                          ? item.variants[0]
+                          : undefined;
+                        return (
+                          <ProductCard
+                            key={
+                              variant ? `${item.id}::${variant.id}` : item.id
+                            }
+                            product={item}
+                            saved={saved.includes(item.id)}
+                            onSave={() => toggleSave(item.id)}
+                            onOpen={() => openProduct(product)}
+                            onAdd={() =>
+                              variant && variant.inStock
+                                ? addToCart(product.id, variant)
+                                : addFromCard(product)
+                            }
+                            added={addedProductId === item.id}
+                            t={t}
+                          />
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="empty">
@@ -907,8 +992,8 @@ export function App() {
         product={selectedProduct}
         saved={selectedProduct ? saved.includes(selectedProduct.id) : false}
         onSave={() => selectedProduct && toggleSave(selectedProduct.id)}
-        onAdd={(variant) =>
-          selectedProduct && addToCart(selectedProduct.id, variant)
+        onAdd={(variant, options) =>
+          selectedProduct && addToCart(selectedProduct.id, variant, options)
         }
         onClose={closeProduct}
         relatedProducts={

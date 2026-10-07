@@ -1,7 +1,8 @@
 import { Heart, House, LayoutGrid, Search, ShoppingBag } from "lucide-react";
 
 type MobileTabBarProps = {
-  active: "home" | "catalog" | "search" | "saved" | "cart";
+  /* The about page has no tab of its own. */
+  active: "home" | "catalog" | "search" | "saved" | "cart" | "about";
   cartCount: number;
   savedCount: number;
   onHome: () => void;

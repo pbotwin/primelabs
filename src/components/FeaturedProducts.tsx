@@ -1,19 +1,24 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import type { CopyKey } from "../data/translations";
-import type { Product } from "../types";
+import type { Language, Product } from "../types";
 
 type FeaturedProductsProps = {
   slides: Product[];
+  language: Language;
   onOpenProduct: (product: Product) => void;
-  t: (key: CopyKey) => string;
+  t: (key: string) => string;
 };
 
+/* At most this many slides (and dots). */
+const MAX_SLIDES = 6;
+
 export function FeaturedProducts({
-  slides,
+  slides: allSlides,
+  language,
   onOpenProduct,
   t,
 }: FeaturedProductsProps) {
+  const slides = allSlides.slice(0, MAX_SLIDES);
   const [activeSlide, setActiveSlide] = useState(0);
   const [paused, setPaused] = useState(false);
   const swipeStartX = useRef<number | null>(null);
@@ -85,12 +90,21 @@ export function FeaturedProducts({
             >
               <div>
                 <span className="featured__label">
-                  {discount ? `−${discount}% ${t("sale")}` : product.brand}
+                  {discount
+                    ? `−${discount}% ${t("sale")}`
+                    : t(product.category)}
                 </span>
                 <h1>{product.name}</h1>
                 <p>
-                  {product.from && <small>{t("from")}</small>}
-                  <strong>₾{product.price.toFixed(2)}</strong>
+                  <strong>
+                    {product.from && language !== "ka" && (
+                      <small className="featured__from">{t("from")} </small>
+                    )}
+                    ₾{product.price.toFixed(2)}
+                    {product.from && language === "ka" && (
+                      <small className="featured__from">-{t("from")}</small>
+                    )}
+                  </strong>
                   {!!product.previousPrice && (
                     <del>₾{product.previousPrice.toFixed(2)}</del>
                   )}

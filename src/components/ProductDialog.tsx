@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, Check, Heart, ShieldCheck, X } from "lucide-react";
 import { uiCopy } from "../data/uiCopy";
+import { CustomSelect } from "./CustomSelect";
 import { STORE } from "../config/store";
 import { useModalDialog } from "../hooks/useModalDialog";
 import type { Language, Product, ProductVariant } from "../types";
@@ -9,7 +10,7 @@ interface Props {
   product: Product | null;
   saved: boolean;
   onSave: () => void;
-  onAdd: (variant?: ProductVariant) => void;
+  onAdd: (variant?: ProductVariant, options?: Record<string, string>) => void;
   onClose: () => void;
   relatedProducts: Product[];
   onRelated: (product: Product) => void;
@@ -30,6 +31,13 @@ export function ProductDialog({
     productId: "",
     variantId: "",
   });
+  // Photo shown and options chosen, both for the product currently open.
+  const [gallery, setGallery] = useState({ productId: "", index: 0 });
+  const [chosen, setChosen] = useState<{
+    productId: string;
+    values: Record<string, string>;
+    missing: boolean;
+  }>({ productId: "", values: {}, missing: false });
   const dialogRef = useModalDialog(Boolean(product), onClose);
   if (!product) return null;
   const u = uiCopy[language];
@@ -45,7 +53,31 @@ export function ProductDialog({
   const displayPreviousPrice =
     selectedVariant?.previousPrice ?? product.previousPrice;
   const available = selectedVariant?.inStock ?? product.inStock;
-  const displayImage = selectedVariant?.image ?? product.image;
+  // The selected variant's photo first, then the product's own.
+  const images = [
+    ...new Set(
+      [selectedVariant?.image, product.image].filter((image): image is string =>
+        Boolean(image),
+      ),
+    ),
+  ];
+  const imageIndex =
+    gallery.productId === product.id && gallery.index < images.length
+      ? gallery.index
+      : 0;
+  const displayImage = images[imageIndex] ?? product.image;
+  const options = product.options ?? [];
+  const values = chosen.productId === product.id ? chosen.values : {};
+  const missingRequired = options.some(
+    (option) => option.required && !values[option.name],
+  );
+  const add = () => {
+    if (missingRequired) {
+      setChosen({ productId: product.id, values, missing: true });
+      return;
+    }
+    onAdd(selectedVariant, Object.keys(values).length ? values : undefined);
+  };
   return (
     <div
       className="dialog-backdrop"
@@ -77,6 +109,21 @@ export function ProductDialog({
               <span className={`badge badge--${product.badge}`}>
                 {t(product.badge)}
               </span>
+            )}
+            {images.length > 1 && (
+              <div className="dialog-thumbs">
+                {images.map((image, index) => (
+                  <button
+                    type="button"
+                    key={image}
+                    className={index === imageIndex ? "active" : undefined}
+                    aria-pressed={index === imageIndex}
+                    onClick={() => setGallery({ productId: product.id, index })}
+                  >
+                    <img src={image} alt="" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
           <div className="dialog-copy">
@@ -112,12 +159,13 @@ export function ProductDialog({
                           selectedVariant?.id === variant.id ? "active" : ""
                         }
                         disabled={!variant.inStock}
-                        onClick={() =>
+                        onClick={() => {
                           setVariantSelection({
                             productId: product.id,
                             variantId: variant.id,
-                          })
-                        }
+                          });
+                          setGallery({ productId: product.id, index: 0 });
+                        }}
                         aria-pressed={selectedVariant?.id === variant.id}
                       >
                         <span>{variant.name}</span>
@@ -133,6 +181,37 @@ export function ProductDialog({
                     ))}
                   </div>
                 </fieldset>
+              )}
+              {options.length > 0 && (
+                <div className="option-picker">
+                  {options.map((option) => (
+                    <CustomSelect<string>
+                      key={option.name}
+                      label={option.required ? `${option.name} *` : option.name}
+                      placeholder={`${t("select")} ${option.name}`}
+                      value={values[option.name] ?? ""}
+                      options={option.values.map((value) => ({
+                        value,
+                        label: value,
+                      }))}
+                      error={
+                        chosen.missing &&
+                        chosen.productId === product.id &&
+                        option.required &&
+                        !values[option.name]
+                          ? `${t("select")} ${option.name}`
+                          : undefined
+                      }
+                      onChange={(value) =>
+                        setChosen({
+                          productId: product.id,
+                          values: { ...values, [option.name]: value },
+                          missing: false,
+                        })
+                      }
+                    />
+                  ))}
+                </div>
               )}
               <p className="dialog-description">
                 {product.description[language] ||
@@ -201,7 +280,7 @@ export function ProductDialog({
               <div className="dialog-actions">
                 <button
                   className="button primary"
-                  onClick={() => onAdd(selectedVariant)}
+                  onClick={add}
                   disabled={!available}
                 >
                   {t("buy")} <ArrowRight />

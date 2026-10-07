@@ -1,7 +1,7 @@
 import { productSearchText } from "../data/uiCopy";
 import type { Category, Product } from "../types";
 
-export type CatalogSort = "featured" | "low" | "high";
+export type CatalogSort = "featured" | "low" | "high" | "name";
 
 type CatalogFilters = {
   category: Category;
@@ -45,6 +45,7 @@ export function filterProducts(
     .sort((first, second) => {
       if (filters.sort === "low") return first.price - second.price;
       if (filters.sort === "high") return second.price - first.price;
+      if (filters.sort === "name") return first.name.localeCompare(second.name);
       return 0;
     });
 }

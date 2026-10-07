@@ -5,6 +5,9 @@ export const STORE = {
   whatsappNumber: "995551022087",
   mapUrl: "https://yandex.com.ge/maps/org/primelabs/220205956204/",
   freeDeliveryThreshold: 150,
+  /* Delivery price below the free-delivery threshold. */
+  deliveryTbilisi: 6,
+  deliveryRegions: 10,
   productsPerPage: 20,
   fallbackImage: "./vitamins.webp",
 } as const;

@@ -143,6 +143,7 @@ export function Header({
             <button onClick={onNewsletter}>
               {language === "ka" ? "სიახლეები" : "Newsletter"}
             </button>
+            <a href="#/about">{t("about")}</a>
             <button onClick={onContact}>{t("contact")}</button>
           </nav>
         </div>

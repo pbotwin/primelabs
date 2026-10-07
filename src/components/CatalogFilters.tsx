@@ -23,8 +23,10 @@ type CatalogFiltersProps = {
   onBrand: (brand: string) => void;
   minPrice: string;
   maxPrice: string;
-  onMinPrice: (value: string) => void;
-  onMaxPrice: (value: string) => void;
+  /* Applies both price limits at once ("" for no limit). */
+  onPrice: (minimum: string, maximum: string) => void;
+  allVariants: boolean;
+  onAllVariants: (value: boolean) => void;
   query: string;
   onQuery: (value: string) => void;
   sort: CatalogSort;
@@ -44,8 +46,9 @@ export function CatalogFilters({
   onBrand,
   minPrice,
   maxPrice,
-  onMinPrice,
-  onMaxPrice,
+  onPrice,
+  allVariants,
+  onAllVariants,
   query,
   onQuery,
   sort,
@@ -53,6 +56,17 @@ export function CatalogFilters({
   t,
 }: CatalogFiltersProps) {
   const [expanded, setExpanded] = useState(false);
+  // Typed price limits take effect when applied; the fields follow the
+  // applied limits whenever those change (e.g. "clear filters").
+  const [draftMin, setDraftMin] = useState(minPrice);
+  const [draftMax, setDraftMax] = useState(maxPrice);
+  const [applied, setApplied] = useState({ min: minPrice, max: maxPrice });
+  if (applied.min !== minPrice || applied.max !== maxPrice) {
+    setApplied({ min: minPrice, max: maxPrice });
+    setDraftMin(minPrice);
+    setDraftMax(maxPrice);
+  }
+  const priceApplied = minPrice !== "" || maxPrice !== "";
   return (
     <>
       <div className="catalog-filters__browse">
@@ -139,8 +153,11 @@ export function CatalogFilters({
               inputMode="decimal"
               min="0"
               placeholder="0 ₾"
-              value={minPrice}
-              onChange={(event) => onMinPrice(event.target.value)}
+              value={draftMin}
+              onChange={(event) => setDraftMin(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") onPrice(draftMin, draftMax);
+              }}
               aria-label={`${t("price")} ${t("priceFrom")}`}
             />
             <i>–</i>
@@ -149,12 +166,47 @@ export function CatalogFilters({
               inputMode="decimal"
               min="0"
               placeholder="500 ₾"
-              value={maxPrice}
-              onChange={(event) => onMaxPrice(event.target.value)}
+              value={draftMax}
+              onChange={(event) => setDraftMax(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") onPrice(draftMin, draftMax);
+              }}
               aria-label={`${t("price")} ${t("priceTo")}`}
             />
           </div>
+          <div className="catalog-filters__price-actions">
+            <button
+              type="button"
+              className="catalog-filters__apply"
+              onClick={() => onPrice(draftMin, draftMax)}
+            >
+              {t("applyFilter")}
+            </button>
+            {priceApplied && (
+              <button
+                type="button"
+                className="catalog-filters__clear"
+                onClick={() => onPrice("", "")}
+              >
+                {t("clearFilter")}
+              </button>
+            )}
+          </div>
         </div>
+        <label className="catalog-filters__variants">
+          <span>{t("displayOptions")}</span>
+          <span className="catalog-filters__checkbox">
+            <input
+              type="checkbox"
+              checked={allVariants}
+              onChange={(event) => onAllVariants(event.target.checked)}
+            />
+            <span>
+              {t("showAllVariants")}
+              <small>{t("showAllVariantsDesc")}</small>
+            </span>
+          </span>
+        </label>
         <label id="catalog-extra-filters" className="catalog-filters__search">
           <span>{t("searchLabel")}</span>
           <span className="catalog-filters__search-field">
@@ -184,6 +236,7 @@ export function CatalogFilters({
             { value: "featured", label: t("featured") },
             { value: "low", label: t("low") },
             { value: "high", label: t("high") },
+            { value: "name", label: t("nameSort") },
           ]}
           onChange={onSort}
         />

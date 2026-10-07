@@ -18,7 +18,7 @@ export function Footer({ t, onContact, onNewsletter }: FooterProps) {
         </div>
         <nav aria-label={t("company")}>
           <h3>{t("company")}</h3>
-          <a href="#about">{t("about")}</a>
+          <a href="#/about">{t("about")}</a>
           <button type="button" onClick={onContact}>
             {t("contact")}
           </button>
