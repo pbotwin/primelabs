@@ -477,11 +477,7 @@
   border: 1px solid color-mix(in srgb, var(--brand) 14%, var(--line));
   border-radius: 18px;
   background:
-    radial-gradient(
-      circle at 0% 0%,
-      color-mix(in srgb, var(--brand) 9%, transparent),
-      transparent 55%
-    ),
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--brand) 9%, transparent), transparent 55%),
     var(--page);
 }
 .seo-block h2 {
@@ -680,4 +676,62 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Phones: copyright and currency stacked, back-to-top on the right. */
+@media (max-width: 639px) {
+  .copyright {
+    min-height: 0;
+    margin-top: 28px;
+    padding-block: 18px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "text top"
+      "meta top";
+    align-items: center;
+    gap: 6px 16px;
+  }
+  .copyright > span:first-child {
+    grid-area: text;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .copyright > span:nth-child(2) {
+    grid-area: meta;
+    margin: 0;
+    font-size: 11px;
+  }
+  .copyright > a {
+    grid-area: top;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--line);
+    background: var(--page);
+    color: var(--brand-deep);
+    box-shadow: 0 6px 16px rgba(43, 20, 47, 0.08);
+    transition: transform 0.15s ease;
+  }
+  .copyright > a:active {
+    transform: scale(0.92);
+  }
+  .copyright > a svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Footer headings and links: regular site font for Georgian (not the caps face). */
+:lang(ka) .footer-grid nav,
+:lang(ka) .footer-grid nav h3 {
+  font-family: inherit;
+}
+.footer-grid nav h3,
+:lang(ka) .footer-grid nav h3 {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
 }

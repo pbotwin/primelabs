@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowRight,
   ChevronDown,
   Heart,
+  Info,
   LayoutGrid,
+  Mail,
+  Menu,
+  MessageCircle,
   Phone,
   Search,
   ShoppingBag,
@@ -95,6 +99,45 @@ export function Header({
     setMenuOpen(false);
     onCategory(id, subcategory);
   };
+
+  // Phone/tablet page menu: full screen below the header
+  const [navOpen, setNavOpen] = useState(false);
+  const [openNavCategory, setOpenNavCategory] = useState<Category | null>(
+    null,
+  );
+  const [navTop, setNavTop] = useState(0);
+  const headerRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const navButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!navOpen) return;
+    const closeNav = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        !navRef.current?.contains(target) &&
+        !navButtonRef.current?.contains(target)
+      )
+        setNavOpen(false);
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setNavOpen(false);
+      navButtonRef.current?.focus();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("pointerdown", closeNav);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("pointerdown", closeNav);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, [navOpen]);
+  const chooseNavCategory = (id: Category, subcategory?: string) => {
+    setNavOpen(false);
+    onCategory(id, subcategory);
+  };
   useEffect(() => {
     const update = () => setStuck(scrollY > 8);
     update();
@@ -149,9 +192,25 @@ export function Header({
         </div>
       </div>
       <header
+        ref={headerRef}
         className={stuck ? "shop-header shop-header--stuck" : "shop-header"}
       >
         <div className="shell shop-header__row">
+          <button
+            ref={navButtonRef}
+            className="shop-header__menu-toggle"
+            aria-label={t("menu")}
+            aria-expanded={navOpen}
+            aria-controls="mobile-page-menu"
+            onClick={() => {
+              setMenuOpen(false);
+              onSearchOpen(false);
+              setNavTop(headerRef.current?.getBoundingClientRect().bottom ?? 0);
+              setNavOpen((open) => !open);
+            }}
+          >
+            {navOpen ? <X /> : <Menu />}
+          </button>
           <a
             href="#top"
             className="shop-header__logo"
@@ -166,6 +225,7 @@ export function Header({
             onClick={() => {
               onSearchOpen(false);
               onQuery("");
+              setNavOpen(false);
               setMenuOpen((open) => !open);
             }}
             aria-expanded={menuOpen}
@@ -188,6 +248,7 @@ export function Header({
               aria-controls="header-search-panel"
               onClick={() => {
                 setMenuOpen(false);
+                setNavOpen(false);
                 onSearchOpen(!searchOpen);
                 if (searchOpen) onQuery("");
               }}
@@ -219,6 +280,127 @@ export function Header({
             </button>
           </div>
         </div>
+        {navOpen && (
+          <nav
+            ref={navRef}
+            id="mobile-page-menu"
+            className="shop-menu"
+            style={{ top: navTop }}
+            aria-label={t("menu")}
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest("a")) setNavOpen(false);
+            }}
+          >
+            <div className="shell shop-menu__body">
+              <h2 className="shop-menu__label">{t("categories")}</h2>
+              <ul className="shop-menu__cats">
+                {categories
+                  .filter((item) => item.id !== "all")
+                  .map((item, index) => {
+                    const subs = subcategoryLinks[item.id] ?? [];
+                    const expanded = openNavCategory === item.id;
+                    return (
+                      <li
+                        key={item.id}
+                        className={expanded ? "is-open" : undefined}
+                        style={{ "--i": index } as CSSProperties}
+                      >
+                        <div className="shop-menu__cat">
+                          <button
+                            type="button"
+                            onClick={() => chooseNavCategory(item.id)}
+                          >
+                            <span className="shop-menu__cat-visual">
+                              <CategoryVisual item={item} />
+                            </span>
+                            {t(item.id)}
+                          </button>
+                          {subs.length > 0 && (
+                            <button
+                              type="button"
+                              className="shop-menu__cat-toggle"
+                              aria-expanded={expanded}
+                              aria-controls={`menu-subs-${item.id}`}
+                              aria-label={t(item.id)}
+                              onClick={() =>
+                                setOpenNavCategory(expanded ? null : item.id)
+                              }
+                            >
+                              <ChevronDown />
+                            </button>
+                          )}
+                        </div>
+                        {subs.length > 0 && (
+                          /* Stays mounted so opening and closing can animate. */
+                          <div
+                            id={`menu-subs-${item.id}`}
+                            className="shop-menu__subs-wrap"
+                            inert={!expanded}
+                          >
+                            <ul className="shop-menu__subs">
+                              {[{ id: "" }, ...subs].map((sub, subIndex) => (
+                                <li
+                                  key={sub.id || "all"}
+                                  style={{ "--j": subIndex } as CSSProperties}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      chooseNavCategory(
+                                        item.id,
+                                        sub.id || undefined,
+                                      )
+                                    }
+                                  >
+                                    {sub.id ? t(sub.id) : t("viewAll")}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+              </ul>
+
+              <h2 className="shop-menu__label">{t("menu")}</h2>
+              <div className="shop-menu__links">
+                <a href="#/about">
+                  <Info /> {t("about")}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNavOpen(false);
+                    onContact();
+                  }}
+                >
+                  <MessageCircle /> {t("contact")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNavOpen(false);
+                    onNewsletter();
+                  }}
+                >
+                  <Mail /> {language === "ka" ? "სიახლეები" : "Newsletter"}
+                </button>
+              </div>
+
+              <a className="shop-menu__phone" href={STORE.phoneHref}>
+                <span>
+                  <Phone />
+                </span>
+                <span>
+                  <small>{t("contact")}</small>
+                  <b>{STORE.phoneDisplay}</b>
+                </span>
+              </a>
+            </div>
+          </nav>
+        )}
         {searchOpen && (
           <div
             ref={searchRef}
