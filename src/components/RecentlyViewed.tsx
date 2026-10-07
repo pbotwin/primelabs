@@ -57,6 +57,7 @@ export function RecentlyViewed({
             onOpen={() => onOpen(product)}
             onAdd={() => onQuickAdd(product)}
             added={addedProductId === product.id}
+            language={language}
             t={t}
           />
         ))}

@@ -650,6 +650,7 @@ export function App() {
               onSave={toggleSave}
               onOpen={openProduct}
               onAdd={addFromCard}
+              language={language}
               t={t}
             />
             {productRails.map((rail) => (
@@ -664,6 +665,7 @@ export function App() {
                 onSave={toggleSave}
                 onOpen={openProduct}
                 onAdd={addFromCard}
+                language={language}
                 t={t}
               />
             ))}
@@ -881,6 +883,7 @@ export function App() {
                                 : addFromCard(product)
                             }
                             added={addedProductId === item.id}
+                            language={language}
                             t={t}
                           />
                         );

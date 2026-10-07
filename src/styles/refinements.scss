@@ -189,6 +189,30 @@
     margin-bottom: 5px;
   }
 }
+/* Mobile: variants and search sit behind "more filters", full width below
+   the price row and the sort / more-filters pair. */
+@media (max-width: 639px) {
+  .catalog-filters--compact .catalog-filters__variants {
+    display: none;
+    order: 10;
+  }
+  .catalog-filters--expanded .catalog-filters__variants {
+    display: block;
+  }
+  .catalog-filters--compact .catalog-filters__search {
+    order: 11;
+  }
+}
+/* Tablet: price | variants | sort on one row, search on its own row. */
+@media (min-width: 640px) and (max-width: 899px) {
+  .catalog-filters--compact .catalog-filters__variants {
+    grid-column: auto;
+  }
+  .catalog-page__aside .catalog-filters--compact .catalog-filters__search {
+    order: 10;
+    grid-column: 1 / -1;
+  }
+}
 
 /* About page: banner, mission, three points, closing call to action */
 .about-page__crumbs {

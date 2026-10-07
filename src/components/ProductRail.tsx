@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import type { Product } from "../types";
+import type { Language, Product } from "../types";
 import { HorizontalScroller } from "./HorizontalScroller";
 import { ProductCard } from "./ProductCard";
 
@@ -13,6 +13,7 @@ type ProductRailProps = {
   onSave: (productId: string) => void;
   onOpen: (product: Product) => void;
   onAdd: (product: Product) => void;
+  language: Language;
   t: (key: string) => string;
 };
 
@@ -27,6 +28,7 @@ export function ProductRail({
   onSave,
   onOpen,
   onAdd,
+  language,
   t,
 }: ProductRailProps) {
   if (!products.length) return null;
@@ -53,6 +55,7 @@ export function ProductRail({
             onOpen={() => onOpen(product)}
             onAdd={() => onAdd(product)}
             added={addedProductId === product.id}
+            language={language}
             t={t}
           />
         ))}

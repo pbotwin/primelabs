@@ -1,6 +1,6 @@
 import { Check, Heart, ShoppingBag } from "lucide-react";
 import { STORE } from "../config/store";
-import type { Product } from "../types";
+import type { Language, Product } from "../types";
 interface Props {
   product: Product;
   saved: boolean;
@@ -8,6 +8,7 @@ interface Props {
   onOpen: () => void;
   onAdd: () => void;
   added: boolean;
+  language: Language;
   t: (key: string) => string;
 }
 export function ProductCard({
@@ -17,6 +18,7 @@ export function ProductCard({
   onOpen,
   onAdd,
   added,
+  language,
   t,
 }: Props) {
   const discount = product.previousPrice
@@ -62,8 +64,13 @@ export function ProductCard({
       </div>
       <div className="product-card__content">
         <div className="product-card__price">
-          {product.from && <small>{t("from")}</small>}
-          <strong>{product.price.toFixed(2)} ₾</strong>
+          {product.from && language !== "ka" && <small>{t("from")}</small>}
+          <strong>
+            {product.price.toFixed(2)} ₾
+            {product.from && language === "ka" && (
+              <small className="product-card__from-suffix">-{t("from")}</small>
+            )}
+          </strong>
           {!!product.previousPrice && (
             <del>{product.previousPrice.toFixed(2)} ₾</del>
           )}
