@@ -477,7 +477,11 @@
   border: 1px solid color-mix(in srgb, var(--brand) 14%, var(--line));
   border-radius: 18px;
   background:
-    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--brand) 9%, transparent), transparent 55%),
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in srgb, var(--brand) 9%, transparent),
+      transparent 55%
+    ),
     var(--page);
 }
 .seo-block h2 {
